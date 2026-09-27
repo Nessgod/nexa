@@ -248,6 +248,23 @@
                 <label class="form-label small text-muted">Nombre de la Tarjeta/Deuda</label>
                 <input type="text" id="deudaNombre" class="form-control" placeholder="Ej: CMR Falabella">
             </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small text-muted">¿De quién es?</label>
+                    <select id="deudaOwner" class="form-select">
+                        <option value="Hogar">Ambos / Hogar</option>
+                        <option value="Bryan">Bryan</option>
+                        <option value="Katia">Katia</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Lote de Pago</label>
+                    <select id="deudaLote" class="form-select">
+                        <option value="1">Día 5 (Lote 1)</option>
+                        <option value="2">Día 15 (Lote 2)</option>
+                    </select>
+                </div>
+            </div>
             <div class="mb-3">
                 <label class="form-label small text-muted">Saldo Total Actual ($)</label>
                 <input type="number" id="deudaSaldo" class="form-control" placeholder="Ej: 1500000">
@@ -815,12 +832,16 @@
                 document.getElementById('deudaNombre').value = d.nombre;
                 document.getElementById('deudaSaldo').value = d.saldo;
                 document.getElementById('deudaMinimo').value = d.minimo;
+                document.getElementById('deudaOwner').value = d.owner || 'Hogar';
+                document.getElementById('deudaLote').value = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? '1' : '2');
                 document.getElementById('modalDeudaTitle').textContent = 'Editar Tarjeta';
             } else {
                 document.getElementById('deudaId').value = '';
                 document.getElementById('deudaNombre').value = '';
                 document.getElementById('deudaSaldo').value = '';
                 document.getElementById('deudaMinimo').value = '';
+                document.getElementById('deudaOwner').value = 'Hogar';
+                document.getElementById('deudaLote').value = '2';
                 document.getElementById('modalDeudaTitle').textContent = 'Nueva Tarjeta';
             }
             if (!modalDeudaInstance) modalDeudaInstance = new bootstrap.Modal(document.getElementById('modalDeuda'));
@@ -837,7 +858,9 @@
                 user_id: currentUser.id,
                 nombre: document.getElementById('deudaNombre').value,
                 saldo: parseFloat(document.getElementById('deudaSaldo').value) || 0,
-                minimo: parseFloat(document.getElementById('deudaMinimo').value) || 0
+                minimo: parseFloat(document.getElementById('deudaMinimo').value) || 0,
+                owner: document.getElementById('deudaOwner').value,
+                lote: parseInt(document.getElementById('deudaLote').value)
             };
 
             if (id) {
@@ -981,20 +1004,22 @@
             `;
             
             let updates = [];
-            ['Falabella', 'Cencosud', 'Itaú'].forEach(nombre => {
-                let d = state.deudas.find(x => x.nombre === nombre);
-                if (d && d.saldo > 0) {
-                    let pago = Math.min(d.saldo, d.minimo);
-                    updates.push({ ...d, saldo: d.saldo - pago, pagoRealizado: pago });
-                    checklistHTML += `
-                    <div class="d-flex justify-content-between text-danger-custom mt-2 align-items-center">
-                        <label class="d-flex align-items-center" style="cursor: pointer;">
-                            <input type="checkbox" checked class="me-2 tarjeta-lote1-checkbox" data-id="${d.id}" data-pago="${pago}" style="transform: scale(1.2);" onchange="recalcularLote1()">
-                            ${d.nombre} (Mínimo)
-                        </label>
-                        <strong>-${fmt(pago)}</strong>
-                    </div>`;
-                }
+            let l1Deudas = state.deudas.filter(d => {
+                let dLote = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
+                return dLote == 1 && d.saldo > 0;
+            }).sort((a,b) => a.saldo - b.saldo);
+            
+            l1Deudas.forEach(d => {
+                let pago = Math.min(d.saldo, d.minimo);
+                updates.push({ ...d, saldo: d.saldo - pago, pagoRealizado: pago, tipo: 'Mínimo' });
+                checklistHTML += `
+                <div class="d-flex justify-content-between text-danger-custom mt-2 align-items-center">
+                    <label class="d-flex align-items-center" style="cursor: pointer;">
+                        <input type="checkbox" checked class="me-2 tarjeta-lote1-checkbox" data-id="${d.id}" data-pago="${pago}" style="transform: scale(1.2);" onchange="recalcularLote1()">
+                        ${d.nombre} ${d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : ''} (Mínimo)
+                    </label>
+                    <strong>-${fmt(pago)}</strong>
+                </div>`;
             });
             
             pendingLoteUpdates = { updates, disp: 0 };
@@ -1035,38 +1060,47 @@
             `;
             
             let updates = [];
-            let lote2Nombres = ['Lider', 'Santander', 'Tricot'];
-            let activas = state.deudas.filter(d => lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
-            if (activas.length === 0) { activas = state.deudas.filter(d => !lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo); }
+            let l2Deudas = state.deudas.filter(d => {
+                let dLote = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
+                return dLote == 2 && d.saldo > 0;
+            }).sort((a,b) => a.saldo - b.saldo);
+            
+            // Si no hay de Lote 2 activas, traemos las de Lote 1 que sigan activas para que se ataquen.
+            if (l2Deudas.length === 0) { 
+                l2Deudas = state.deudas.filter(d => d.saldo > 0).sort((a,b) => a.saldo - b.saldo); 
+            }
 
-            if (activas.length > 0) {
+            if (l2Deudas.length > 0) {
                 // Mínimos
-                for (let i = 1; i < activas.length; i++) {
-                    let pago = Math.min(activas[i].saldo, activas[i].minimo);
+                for (let i = 1; i < l2Deudas.length; i++) {
+                    let d = l2Deudas[i];
+                    let pago = Math.min(d.saldo, d.minimo);
                     disp -= pago; 
-                    updates.push({ ...activas[i], saldo: activas[i].saldo - pago, pagoRealizado: pago, tipo: 'Mínimo' });
+                    updates.push({ ...d, saldo: d.saldo - pago, pagoRealizado: pago, tipo: 'Mínimo' });
+                    let ow = d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : '';
                     checklistHTML += `
                     <div class="d-flex justify-content-between text-danger-custom mt-1">
-                        <label><input type="checkbox" checked disabled class="me-2">${activas[i].nombre} (Mínimo)</label>
+                        <label><input type="checkbox" checked disabled class="me-2">${d.nombre} ${ow} (Mínimo)</label>
                         <strong>-${fmt(pago)}</strong>
                     </div>`;
                 }
                 
                 // Objetivo Principal (Ataque Nieve)
-                let objetivo = activas[0];
+                let objetivo = l2Deudas[0];
+                let ow = objetivo.owner && objetivo.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${objetivo.owner}</span>` : '';
                 let ataque = Math.min(objetivo.saldo, disp);
                 disp -= ataque;
                 updates.push({ ...objetivo, saldo: objetivo.saldo - ataque, pagoRealizado: ataque, tipo: 'ATAQUE NIEVE' });
                 checklistHTML += `
                 <div class="d-flex justify-content-between text-accent mt-2 fw-bold p-2 bg-accent-dim rounded">
-                    <label><input type="checkbox" checked disabled class="me-2">${objetivo.nombre} (🔥 ATAQUE)</label>
+                    <label><input type="checkbox" checked disabled class="me-2">${objetivo.nombre} ${ow} (🔥 ATAQUE)</label>
                     <strong>-${fmt(ataque)}</strong>
                 </div>`;
                 
                 // Spillover
                 let idx = 1;
-                while(disp > 0 && idx < activas.length) {
-                    let sig = activas[idx];
+                while(disp > 0 && idx < l2Deudas.length) {
+                    let sig = l2Deudas[idx];
                     let spill = Math.min(sig.saldo, disp);
                     disp -= spill;
                     let existing = updates.find(u => u.id === sig.id);
@@ -1229,15 +1263,28 @@
 
             let m = state.ciclo.mes, maxM = m + 30;
             let html = '';
-            
-            const l1Nombres = ['Falabella', 'Cencosud', 'Itaú'];
-            const l2Nombres = ['Lider', 'Santander', 'Tricot'];
 
             const getBadgeClass = (estado) => {
                 if(estado === '¡CERRAR TARJETA!') return 'bg-success-custom text-white';
                 if(estado === 'Activa - ¡Casi lista!') return 'bg-warning-custom text-white';
                 if(estado === 'Pagado') return 'bg-light text-muted border';
                 return 'bg-secondary bg-opacity-10 text-secondary';
+            };
+
+            const getLoteDeudas = (deudas, loteId) => {
+                return deudas.filter(d => {
+                    let dLote = d.lote;
+                    if (!dLote) {
+                        dLote = ['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2;
+                    }
+                    return dLote === loteId && d.saldo > 0;
+                });
+            };
+
+            const getOwnerBadge = (owner) => {
+                if(owner === 'Bryan') return '<span class="badge bg-primary bg-opacity-10 text-primary ms-2" style="font-size:0.65rem;">Bryan</span>';
+                if(owner === 'Katia') return '<span class="badge bg-danger bg-opacity-10 text-danger ms-2" style="font-size:0.65rem;">Katia</span>';
+                return '';
             };
 
             while(s.some(x => x.saldo > 0) && m < maxM) {
@@ -1265,7 +1312,7 @@
                                 </div>
                             </div>`;
 
-                let l1Deudas = s.filter(x => l1Nombres.includes(x.nombre) && x.saldo > 0);
+                let l1Deudas = getLoteDeudas(s, 1);
                 let pagosL1 = {};
                 l1Deudas.forEach(d => { pagosL1[d.nombre] = 0; });
                 
@@ -1275,7 +1322,9 @@
                     disp1 -= p;
                 });
 
-                if (target && l1Nombres.includes(target.nombre) && disp1 > 0) {
+                let targetLote = target ? (target.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(target.nombre) ? 1 : 2)) : 0;
+
+                if (target && targetLote === 1 && disp1 > 0) {
                     let p = Math.min(target.saldo - pagosL1[target.nombre], disp1);
                     pagosL1[target.nombre] += p;
                     disp1 -= p;
@@ -1296,7 +1345,7 @@
                             <div class="list-group-item py-3">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <div>
-                                        <div class="fw-bold text-main">${d.nombre}</div>
+                                        <div class="fw-bold text-main">${d.nombre} ${getOwnerBadge(d.owner)}</div>
                                         <div class="text-muted" style="font-size:0.75rem;">${etiqueta}</div>
                                     </div>
                                     <span class="badge ${getBadgeClass(estado)} ms-2 text-end">${estado}</span>
@@ -1308,10 +1357,10 @@
                             </div>`;
                 });
                 
-                html += `</div></div>`; // Close Lote 1 card
+                html += `</div></div>`;
 
                 let disp2 = ing2 + disp1; 
-                let l2Deudas = s.filter(x => l2Nombres.includes(x.nombre) && x.saldo > 0);
+                let l2Deudas = getLoteDeudas(s, 2);
                 let pagosL2 = {};
                 l2Deudas.forEach(d => { pagosL2[d.nombre] = 0; });
                 
@@ -1324,12 +1373,13 @@
                 if (target.saldo === 0) {
                     let remaining = s.filter(x => x.saldo > 0).sort((a,b) => a.saldo - b.saldo);
                     target = remaining.length > 0 ? remaining[0] : null;
+                    if(target) targetLote = target.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(target.nombre) ? 1 : 2);
                 }
 
                 let htmlL2 = '';
 
                 if (target && disp2 > 0) {
-                    if (l2Nombres.includes(target.nombre)) {
+                    if (targetLote === 2) {
                         let p = Math.min(target.saldo - pagosL2[target.nombre], disp2);
                         pagosL2[target.nombre] += p;
                         disp2 -= p;
@@ -1343,7 +1393,7 @@
                             <div class="list-group-item py-3">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <div>
-                                        <div class="fw-bold text-main">${target.nombre}</div>
+                                        <div class="fw-bold text-main">${target.nombre} ${getOwnerBadge(target.owner)}</div>
                                         <div class="text-muted" style="font-size:0.75rem;">Ataque Nieve Adicional</div>
                                     </div>
                                     <span class="badge ${getBadgeClass(estado)} ms-2 text-end">${estado}</span>
@@ -1372,7 +1422,7 @@
                             <div class="list-group-item py-3">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <div>
-                                        <div class="fw-bold text-main">${d.nombre}</div>
+                                        <div class="fw-bold text-main">${d.nombre} ${getOwnerBadge(d.owner)}</div>
                                         <div class="text-muted" style="font-size:0.75rem;">${etiqueta}</div>
                                     </div>
                                     <span class="badge ${getBadgeClass(estado)} ms-2 text-end">${estado}</span>
