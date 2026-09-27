@@ -188,17 +188,25 @@
         </div>
         
         <div class="row g-4 mx-2">
-            <div class="col-6">
+            <div class="col-6 position-relative">
+                <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; z-index: 10;" onclick="document.getElementById('uploadBryan').click(); event.stopPropagation();">
+                    <span class="material-symbols-rounded" style="font-size: 16px;">edit</span>
+                </button>
                 <div class="card text-center p-4 profile-card bryan" onclick="loginAs('Bryan')">
-                    <img src="bryan.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Bryan">
+                    <img id="imgAvatarBryan" src="bryan.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Bryan">
                     <h5 class="fw-bold mb-0 text-main">Bryan</h5>
                 </div>
+                <input type="file" id="uploadBryan" accept="image/*" class="d-none" onchange="handleAvatarUpload(event, 'Bryan')">
             </div>
-            <div class="col-6">
+            <div class="col-6 position-relative">
+                <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; z-index: 10;" onclick="document.getElementById('uploadKatia').click(); event.stopPropagation();">
+                    <span class="material-symbols-rounded" style="font-size: 16px;">edit</span>
+                </button>
                 <div class="card text-center p-4 profile-card katia" onclick="loginAs('Katia')">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Katia&backgroundColor=ffdfbf" class="rounded-circle mx-auto mb-3 shadow-sm" width="80" alt="Katia">
+                    <img id="imgAvatarKatia" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Katia&backgroundColor=ffdfbf" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Katia">
                     <h5 class="fw-bold mb-0 text-main">Katia</h5>
                 </div>
+                <input type="file" id="uploadKatia" accept="image/*" class="d-none" onchange="handleAvatarUpload(event, 'Katia')">
             </div>
         </div>
         
@@ -539,7 +547,52 @@
             document.getElementById('auth-section').classList.remove('d-none');
             document.getElementById('app-section').classList.add('d-none');
             document.getElementById('bottom-nav').classList.add('d-none');
+            
+            const savedB = localStorage.getItem('nexa_avatar_Bryan');
+            if(savedB) document.getElementById('imgAvatarBryan').src = savedB;
+            
+            const savedK = localStorage.getItem('nexa_avatar_Katia');
+            if(savedK) document.getElementById('imgAvatarKatia').src = savedK;
         }
+
+        window.handleAvatarUpload = (e, name) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const MAX_SIZE = 250;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height) {
+                        if (width > MAX_SIZE) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        }
+                    } else {
+                        if (height > MAX_SIZE) {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    localStorage.setItem('nexa_avatar_' + name, dataUrl);
+                    document.getElementById('imgAvatar' + name).src = dataUrl;
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        };
 
         async function showApp() {
             document.getElementById('auth-section').classList.add('d-none');
