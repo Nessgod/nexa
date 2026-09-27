@@ -295,12 +295,15 @@
         
         <!-- Top Bar -->
         <div class="top-bar">
-            <div>
-                <h4 class="mb-0">Hola, <span id="userName" class="text-accent">Usuario</span></h4>
-                <small class="text-muted">Tu resumen financiero</small>
+            <div class="d-flex align-items-center">
+                <img id="topBarAvatar" src="" class="rounded-circle shadow-sm me-3 d-none" style="width: 44px; height: 44px; object-fit: cover;" alt="Avatar">
+                <div>
+                    <h4 class="mb-0 fw-bold">Hola, <span id="userName" class="text-accent">Usuario</span></h4>
+                    <small class="text-muted">Tu resumen financiero</small>
+                </div>
             </div>
-            <div class="user-avatar" onclick="logout()" style="cursor: pointer;" title="Cerrar sesión">
-                <span class="material-symbols-rounded">logout</span>
+            <div class="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" style="width: 40px; height: 40px; cursor: pointer; border: 1px solid var(--border-color);" onclick="logout()" title="Cerrar sesión">
+                <span class="material-symbols-rounded text-muted" style="font-size:20px;">logout</span>
             </div>
         </div>
 
@@ -601,6 +604,20 @@
             
             const profile = localStorage.getItem('nexa_profile') || 'Usuario';
             document.getElementById('userName').textContent = profile;
+            
+            const topAvatar = document.getElementById('topBarAvatar');
+            const savedAvatar = localStorage.getItem('nexa_avatar_' + profile);
+            
+            if (savedAvatar) {
+                topAvatar.src = savedAvatar;
+                topAvatar.classList.remove('d-none');
+            } else if (profile === 'Bryan') {
+                topAvatar.src = 'bryan.jpg';
+                topAvatar.classList.remove('d-none');
+            } else if (profile === 'Katia') {
+                topAvatar.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Katia&backgroundColor=ffdfbf';
+                topAvatar.classList.remove('d-none');
+            }
             
             await loadData();
         }
