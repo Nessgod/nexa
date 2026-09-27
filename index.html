@@ -508,8 +508,16 @@
             const err = document.getElementById('authError');
             err.innerHTML = '<span class="spinner-border spinner-border-sm text-accent"></span> <span class="ms-2 text-muted">Cargando...</span>';
             
-            const email = 'familia@nexa.app';
+            const email = 'hogar@nexa.app';
             const password = 'HogarNexa2026!';
+
+            // Check si ya hay sesión para evitar rate limits
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session && session.user && session.user.email === email) {
+                currentUser = session.user;
+                showApp();
+                return;
+            }
             
             let { error } = await supabase.auth.signInWithPassword({ email, password });
             
