@@ -548,6 +548,13 @@
             const base = DEUDAS_BASE.find(d => d.nombre === nombre);
             return base ? base.icon : 'credit_card';
         };
+        
+        window.getOwnerBadge = (owner) => {
+            if(!owner || owner === 'Hogar') return '';
+            if(owner === 'Bryan') return '<span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size:0.65rem;">Bryan</span>';
+            if(owner === 'Katia') return '<span class="badge bg-danger bg-opacity-10 text-danger ms-1" style="font-size:0.65rem;">Katia</span>';
+            return `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.65rem;">${owner}</span>`;
+        };
 
         const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
 
@@ -803,12 +810,11 @@
             [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
                 let dLote = parseInt(d.lote) || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
                 let badge = dLote === 1 ? '<span class="badge bg-primary bg-opacity-10 text-primary ms-2" style="font-size:0.65rem;">Lote 1</span>' : '<span class="badge bg-success bg-opacity-10 text-success ms-2" style="font-size:0.65rem;">Lote 2</span>';
-                let ow = d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : '';
                 
                 htmlDeudas += `
                 <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
                     <div>
-                        <div class="fw-bold">${d.nombre} ${ow} ${badge}</div>
+                        <div class="fw-bold">${d.nombre} ${getOwnerBadge(d.owner)} ${badge}</div>
                         <div class="small text-muted">Saldo: ${fmt(d.saldo)} | Mín: ${fmt(d.minimo)}</div>
                     </div>
                     <div>
@@ -1289,7 +1295,6 @@
                 if (dLote !== loteActual || d.saldo === 0) return;
                 
                 const iconName = getIconForDebt(d.nombre);
-                let ow = d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : '';
                 htmlNieve += `
                 <div class="debt-item">
                     <div class="d-flex align-items-center">
@@ -1297,7 +1302,7 @@
                             <span class="material-symbols-rounded">${iconName}</span>
                         </div>
                         <div>
-                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main);">${d.nombre} ${ow}</div>
+                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main);">${d.nombre} ${getOwnerBadge(d.owner)}</div>
                             <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Mín: ${fmt(d.minimo)}</div>
                         </div>
                     </div>
@@ -1318,7 +1323,6 @@
                 if(d.saldo > 0) pagadas = false;
                 const isPaid = d.saldo === 0;
                 const iconName = getIconForDebt(d.nombre);
-                let ow = d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : '';
                 htmlAll += `
                 <div class="debt-item" style="${isPaid ? 'opacity: 0.4;' : ''}">
                     <div class="d-flex align-items-center">
@@ -1326,7 +1330,7 @@
                             <span class="material-symbols-rounded">${isPaid ? 'check_circle' : iconName}</span>
                         </div>
                         <div>
-                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main); ${isPaid ? 'text-decoration: line-through;' : ''}">${d.nombre} ${ow}</div>
+                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main); ${isPaid ? 'text-decoration: line-through;' : ''}">${d.nombre} ${getOwnerBadge(d.owner)}</div>
                             <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Mín: ${fmt(d.minimo)}</div>
                         </div>
                     </div>
@@ -1603,10 +1607,8 @@
                 let badgeHtml = '';
                 const match = descText.match(/^\[(.*?)\] (.*)$/);
                 if (match) {
-                    const profileName = match[1];
+                    badgeHtml = getOwnerBadge(match[1]);
                     descText = match[2];
-                    const bgClass = profileName === 'Katia' ? 'bg-danger' : (profileName === 'Bryan' ? 'bg-primary' : 'bg-secondary');
-                    badgeHtml = `<span class="badge ${bgClass} me-2" style="font-size: 0.65rem; opacity: 0.85;">${profileName}</span>`;
                 }
 
                 html += `
