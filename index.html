@@ -3,150 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexa</title>
+    <title>Plan Bola de Nieve</title>
     
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Nexa">
+    <meta name="apple-mobile-web-app-title" content="Snowball">
     <link rel="apple-touch-icon" href="/icon.png">
     <link rel="manifest" href="/manifest.json">
 
-    <!-- UI Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
-    <!-- Estilos Core -->
     <style>
-        body { background-color: #1E1E24; color: #f8f9fa; font-family: system-ui, -apple-system, sans-serif; }
-        .card { background-color: #2b2b36; border: none; border-radius: 12px; }
-        .form-control, .form-select { background-color: #1a1a20; color: white; border: 1px solid #444; }
-        .form-control:focus, .form-select:focus { background-color: #1a1a20; color: white; border-color: #0d6efd; box-shadow: none; }
-        .list-group-item { border-color: #444; }
-        .nav-link { color: #aaa; cursor: pointer; }
-        .nav-link.active { color: #fff; font-weight: bold; border-bottom: 2px solid #0d6efd; }
-        .d-none { display: none !important; }
-        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+        body { 
+            background-color: #1E1E24; 
+            color: #f8f9fa; 
+            font-family: system-ui, -apple-system, sans-serif; 
+        }
+        .card { 
+            background-color: #2b2b36; 
+            border: none; 
+            border-radius: 12px; 
+            margin-bottom: 15px;
+        }
+        .card-header {
+            background-color: #1a1a20;
+            border-bottom: 1px solid #444;
+            border-top-left-radius: 12px !important;
+            border-top-right-radius: 12px !important;
+            font-weight: bold;
+        }
+        .text-accent { color: #0d6efd; }
+        .text-success-custom { color: #20c997; }
+        .btn-custom { font-weight: bold; padding: 12px; border-radius: 8px; }
+        .debt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #444;
+        }
+        .debt-item:last-child { border-bottom: none; }
+        .debt-name { font-size: 1.1rem; font-weight: 500; }
+        .debt-balance { font-size: 1.2rem; font-weight: bold; }
+        .paid-badge { text-decoration: line-through; opacity: 0.5; }
     </style>
 </head>
 <body class="container py-4">
 
-    <div id="auth-section">
-        <h2 class="text-center mb-4 fw-bold">Bienvenido a Nexa</h2>
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card p-4 shadow-lg">
-                    <ul class="nav nav-tabs mb-3" id="authTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">Iniciar Sesión</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab">Registrarse</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="authTabContent">
-                        <!-- Login -->
-                        <div class="tab-pane fade show active" id="login" role="tabpanel">
-                            <form id="formLogin">
-                                <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Correo" required>
-                                <input type="password" id="loginPass" class="form-control mb-3" placeholder="Contraseña" required>
-                                <button type="submit" class="btn btn-primary w-100 fw-bold">Entrar</button>
-                            </form>
-                        </div>
-                        <!-- Register -->
-                        <div class="tab-pane fade" id="register" role="tabpanel">
-                            <form id="formRegister">
-                                <input type="email" id="regEmail" class="form-control mb-3" placeholder="Correo" required>
-                                <input type="password" id="regPass" class="form-control mb-3" placeholder="Contraseña" required>
-                                <button type="submit" class="btn btn-success w-100 fw-bold">Crear Cuenta</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div id="authError" class="text-danger mt-3 text-center d-none"></div>
-                </div>
-            </div>
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Plan Bola de Nieve</h2>
+        <p class="text-muted" id="mesActualBadge">Mes Actual: 1</p>
+    </div>
+
+    <!-- Estado Financiero -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-header d-flex justify-content-between">
+            <span>Flujo de Caja (Pozo)</span>
+            <span id="pozoActual" class="text-success-custom fs-5">$0</span>
+        </div>
+        <div class="card-body">
+            <p class="mb-1 small text-muted">Estado del ciclo:</p>
+            <h5 id="estadoCiclo" class="text-accent mb-0">Esperando Lote 1</h5>
         </div>
     </div>
 
-    <div id="app-section" class="d-none">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="fw-bold m-0">Nexa</h3>
-            <div>
-                <span id="userEmailDisplay" class="me-3 text-muted small"></span>
-                <button id="btnLogout" class="btn btn-sm btn-outline-danger">Salir</button>
-            </div>
+    <!-- Acciones -->
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <button id="btnLote1" class="btn btn-primary w-100 btn-custom" onclick="ejecutarLote1()">Ejecutar Lote 1<br><small>(Día 5)</small></button>
         </div>
-
-        <!-- Grupo Management -->
-        <div id="group-setup" class="alert alert-dark border border-secondary mb-4">
-            <strong>Panel Compartido:</strong> 
-            <span id="groupStatus">No estás en ningún grupo compartido.</span>
-            <div class="mt-2" id="groupActions">
-                <button class="btn btn-sm btn-primary me-2" id="btnCreateGroup">Crear Nuevo Grupo</button>
-                <div class="input-group input-group-sm mt-2" style="max-width: 300px;">
-                    <input type="text" id="joinGroupId" class="form-control" placeholder="ID del Grupo">
-                    <button class="btn btn-outline-success" id="btnJoinGroup">Unirse</button>
-                </div>
-            </div>
+        <div class="col-6">
+            <button id="btnLote2" class="btn btn-success w-100 btn-custom" onclick="ejecutarLote2()" disabled>Ejecutar Lote 2<br><small>(Ataque)</small></button>
         </div>
-
-        <!-- Navigation Tabs -->
-        <ul class="nav mb-4" id="appTabs">
-            <li class="nav-item"><a class="nav-link active" data-target="panel-personal">Personal</a></li>
-            <li class="nav-item"><a class="nav-link" data-target="panel-compartido">Compartido</a></li>
-            <li class="nav-item"><a class="nav-link" data-target="panel-graficos">Gráficos</a></li>
-        </ul>
-
-        <!-- Panel Personal / Compartido (Shared logic UI) -->
-        <div id="panels-container">
-            <div class="row g-4">
-                <!-- Bloque Gastos -->
-                <div class="col-md-6">
-                    <div class="card p-3 shadow-lg">
-                        <h5 class="fw-bold mb-3" id="gastosTitle">Registrar Gasto</h5>
-                        <form id="formGasto" class="mb-4">
-                            <input type="text" id="descGasto" class="form-control mb-2" placeholder="Detalle (Ej. Supermercado)" required>
-                            <input type="number" id="montoGasto" class="form-control mb-2" placeholder="Monto ($)" required>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Guardar Gasto</button>
-                        </form>
-                        <h6 class="fw-bold text-muted d-flex justify-content-between">
-                            <span>Registro Histórico</span>
-                            <span id="totalGastos" class="text-white">$0</span>
-                        </h6>
-                        <ul id="listaGastos" class="list-group list-group-flush bg-transparent"></ul>
-                    </div>
-                </div>
-
-                <!-- Bloque Tareas -->
-                <div class="col-md-6">
-                    <div class="card p-3 shadow-lg">
-                        <h5 class="fw-bold mb-3" id="tareasTitle">Lista de Tareas</h5>
-                        <form id="formTarea" class="mb-4 d-flex">
-                            <input type="text" id="descTarea" class="form-control me-2" placeholder="Ingresar nueva tarea..." required>
-                            <button type="submit" class="btn btn-success fw-bold">+</button>
-                        </form>
-                        <ul id="listaTareas" class="list-group list-group-flush bg-transparent"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Panel Gráficos -->
-        <div id="panel-graficos" class="d-none">
-            <div class="card p-3 shadow-lg">
-                <h5 class="fw-bold mb-3">Análisis de Gastos</h5>
-                <canvas id="gastosChart" style="max-height: 400px;"></canvas>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Scripts Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Core App Logic -->
-    <script type="module" src="js/app.js"></script>
+    <!-- Lista de Deudas -->
+    <h5 class="fw-bold mb-3">Estado de Tarjetas</h5>
+    <div class="card shadow-lg p-3" id="listaDeudas">
+        <!-- Renderizado por JS -->
+    </div>
+
+    <div class="text-center mt-4">
+        <button class="btn btn-sm btn-outline-danger" onclick="reiniciarPlan()">Reiniciar Todo el Plan</button>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN INICIAL HARDCODED
+        const DEUDAS_INICIALES = [
+            { id: 'tricot', nombre: 'Tricot', saldo: 164886, minimo: 30000 },
+            { id: 'santander', nombre: 'Santander', saldo: 506857, minimo: 40000 },
+            { id: 'itau', nombre: 'Itaú', saldo: 613152, minimo: 55000 },
+            { id: 'lider', nombre: 'Lider', saldo: 960000, minimo: 113000 },
+            { id: 'falabella', nombre: 'Falabella', saldo: 1141200, minimo: 162000 },
+            { id: 'cencosud', nombre: 'Cencosud', saldo: 1195320, minimo: 85000 }
+        ];
+
+        const INGRESO_DIA_5 = 920000;
+        const GASTO_FIJO_CASA = 584000;
+        const INGRESO_DIA_15 = 250000;
+
+        // ESTADO GLOBAL
+        let state = {
+            mes: 1,
+            fase: 0, // 0 = Esperando Lote 1, 1 = Esperando Lote 2
+            pozo: 0,
+            deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES))
+        };
+
+        // INICIALIZACIÓN
+        function init() {
+            const savedState = localStorage.getItem('snowballState');
+            if (savedState) {
+                state = JSON.parse(savedState);
+            }
+            render();
+        }
+
+        function saveState() {
+            localStorage.setItem('snowballState', JSON.stringify(state));
+            render();
+        }
+
+        // LÓGICA DE NEGOCIO
+        function ejecutarLote1() {
+            if (state.fase !== 0) return;
+
+            let disponible = INGRESO_DIA_5 - GASTO_FIJO_CASA; // 336.000
+            
+            // Pagos mínimos de Falabella, Cencosud e Itaú
+            const aPagar = ['falabella', 'cencosud', 'itau'];
+            aPagar.forEach(id => {
+                let deuda = state.deudas.find(d => d.id === id);
+                if (deuda && deuda.saldo > 0) {
+                    let pago = Math.min(deuda.saldo, deuda.minimo);
+                    disponible -= pago;
+                    deuda.saldo -= pago;
+                }
+            });
+
+            // Guardar remanente en pozo y avanzar fase
+            state.pozo = disponible;
+            state.fase = 1;
+            saveState();
+        }
+
+        function ejecutarLote2() {
+            if (state.fase !== 1) return;
+
+            // Ingreso quincena + pozo anterior
+            let disponible = INGRESO_DIA_15 + state.pozo;
+
+            // Pagos mínimos de Lider, Santander (y Tricot, si asumimos que se paga aquí el mínimo para que no quede impago antes del ataque)
+            // NOTA: El prompt no especificó el mínimo de Tricot en los lotes, pero tiene $30.000 asignados. 
+            // Pagaremos Lider y Santander como se indicó explícitamente.
+            const aPagar = ['lider', 'santander'];
+            aPagar.forEach(id => {
+                let deuda = state.deudas.find(d => d.id === id);
+                if (deuda && deuda.saldo > 0) {
+                    let pago = Math.min(deuda.saldo, deuda.minimo);
+                    disponible -= pago;
+                    deuda.saldo -= pago;
+                }
+            });
+
+            // Si Tricot tiene saldo, descontar su mínimo por sanidad financiera antes del ataque
+            let tricot = state.deudas.find(d => d.id === 'tricot');
+            if (tricot && tricot.saldo > 0) {
+                let pago = Math.min(tricot.saldo, tricot.minimo);
+                disponible -= pago;
+                tricot.saldo -= pago;
+            }
+
+            // ATAQUE BOLA DE NIEVE (Pagar deuda activa con menor saldo)
+            let deudasActivas = state.deudas.filter(d => d.saldo > 0);
+            deudasActivas.sort((a, b) => a.saldo - b.saldo);
+
+            if (deudasActivas.length > 0 && disponible > 0) {
+                let deudaObjetivo = deudasActivas[0];
+                let abonoExtra = Math.min(deudaObjetivo.saldo, disponible);
+                deudaObjetivo.saldo -= abonoExtra;
+                disponible -= abonoExtra; // El sobrante real podría guardarse o perderse, lo dejamos en 0 para simplificar.
+            }
+
+            // Reiniciar para el próximo mes
+            state.pozo = 0;
+            state.fase = 0;
+            state.mes += 1;
+            saveState();
+        }
+
+        function reiniciarPlan() {
+            if (confirm("¿Estás seguro de reiniciar todo el progreso a los saldos iniciales?")) {
+                localStorage.removeItem('snowballState');
+                state = {
+                    mes: 1,
+                    fase: 0,
+                    pozo: 0,
+                    deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES))
+                };
+                saveState();
+            }
+        }
+
+        // RENDERIZADO UI
+        function formatMoney(amount) {
+            return '$' + amount.toLocaleString('es-CL');
+        }
+
+        function render() {
+            document.getElementById('mesActualBadge').textContent = `Mes Actual: ${state.mes}`;
+            document.getElementById('pozoActual').textContent = formatMoney(state.pozo);
+            
+            const btnLote1 = document.getElementById('btnLote1');
+            const btnLote2 = document.getElementById('btnLote2');
+            const estadoCiclo = document.getElementById('estadoCiclo');
+
+            if (state.fase === 0) {
+                btnLote1.disabled = false;
+                btnLote2.disabled = true;
+                estadoCiclo.textContent = "Esperando Lote 1 (Día 5)";
+                estadoCiclo.className = "text-accent mb-0";
+            } else {
+                btnLote1.disabled = true;
+                btnLote2.disabled = false;
+                estadoCiclo.textContent = "Esperando Lote 2 (Ataque)";
+                estadoCiclo.className = "text-warning mb-0";
+            }
+
+            // Render Deudas ordenadas por saldo para visualizar la bola de nieve
+            const lista = document.getElementById('listaDeudas');
+            lista.innerHTML = '';
+            
+            // Hacemos una copia para ordenar visualmente sin alterar el array original
+            let deudasVisual = [...state.deudas].sort((a, b) => a.saldo - b.saldo);
+            let todasPagadas = true;
+
+            deudasVisual.forEach(d => {
+                if (d.saldo > 0) todasPagadas = false;
+                
+                const row = document.createElement('div');
+                row.className = `debt-item ${d.saldo === 0 ? 'paid-badge' : ''}`;
+                row.innerHTML = `
+                    <div>
+                        <div class="debt-name">${d.nombre}</div>
+                        <small class="text-muted">Mín: ${formatMoney(d.minimo)}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="debt-balance text-${d.saldo === 0 ? 'success' : 'danger'}">${formatMoney(d.saldo)}</div>
+                    </div>
+                `;
+                lista.appendChild(row);
+            });
+
+            if (todasPagadas) {
+                estadoCiclo.textContent = "¡LIBRE DE DEUDAS!";
+                estadoCiclo.className = "text-success mb-0 fw-bold";
+                btnLote1.disabled = true;
+                btnLote2.disabled = true;
+            }
+        }
+
+        // Arrancar
+        init();
+    </script>
 </body>
 </html>
