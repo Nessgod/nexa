@@ -381,7 +381,17 @@
                 <!-- Se renderizan los gastos fijos (Casa) -->
             </div>
 
-            <h5 class="fw-bold mb-3 px-2">Tarjetas de Crédito Activas</h5>
+            <h5 class="fw-bold mb-3 px-2" id="tituloListaDeudasNieve">Próximos Pagos</h5>
+            <div class="card" id="listaDeudasNieve"></div>
+        </div>
+
+        <!-- VISTA DEUDAS DETALLADAS -->
+        <div id="view-deudas" class="d-none px-2">
+            <div class="text-center mb-4 mt-2">
+                <span class="material-symbols-rounded text-danger-custom mb-2" style="font-size: 48px;">credit_card</span>
+                <h3 class="fw-bold mb-2">Deudas Detalladas</h3>
+                <p class="text-muted small">El detalle completo de todas tus deudas activas en este momento.</p>
+            </div>
             <div class="card" id="listaDeudas"></div>
         </div>
 
@@ -476,11 +486,15 @@
     <div id="bottom-nav" class="bottom-nav d-none">
         <div class="nav-item active" onclick="switchTab('nieve', this)">
             <span class="material-symbols-rounded">snowing</span>
-            Plan Nieve
+            Nieve
         </div>
         <div class="nav-item" onclick="switchTab('plan', this)">
             <span class="material-symbols-rounded">event_note</span>
             Proyección
+        </div>
+        <div class="nav-item" onclick="switchTab('deudas', this)">
+            <span class="material-symbols-rounded">credit_card</span>
+            Deudas
         </div>
         <div class="nav-item" onclick="switchTab('gastos', this)">
             <span class="material-symbols-rounded">wallet</span>
@@ -1204,39 +1218,81 @@
             // Render Gastos Fijos
             let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
             let fijosHtml = '';
-            fijos.forEach(g => {
-                fijosHtml += `
-                <div class="debt-item bg-transparent">
+            if (state.ciclo.fase === 0) { // Mostrar gastos fijos solo antes de Lote 1
+                fijos.forEach(g => {
+                    fijosHtml += `
+                    <div class="debt-item bg-transparent">
+                        <div class="d-flex align-items-center">
+                            <div class="debt-icon bg-secondary bg-opacity-10 text-secondary">
+                                <span class="material-symbols-rounded">${g.icon}</span>
+                            </div>
+                            <div>
+                                <div style="font-size:1.05rem; font-weight:600; color:var(--text-main);">${g.nombre}</div>
+                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Se paga en Día 05</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(g.monto)}</div>
+                        </div>
+                    </div>`;
+                });
+            }
+            document.getElementById('listaGastosFijos').innerHTML = fijosHtml;
+
+            // Update Nieve Title
+            let titulo = document.getElementById('tituloListaDeudasNieve');
+            if (state.ciclo.fase === 0) {
+                titulo.innerHTML = 'Próximos Pagos (Día 05)';
+            } else {
+                titulo.innerHTML = 'Próximos Pagos (Día 15)';
+            }
+
+            // Render Deudas Nieve (Upcoming)
+            let htmlNieve = '';
+            let loteActual = state.ciclo.fase === 0 ? 1 : 2;
+            [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
+                let dLote = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
+                if (dLote !== loteActual || d.saldo === 0) return;
+                
+                const iconName = getIconForDebt(d.nombre);
+                let ow = d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : '';
+                htmlNieve += `
+                <div class="debt-item">
                     <div class="d-flex align-items-center">
-                        <div class="debt-icon bg-secondary bg-opacity-10 text-secondary">
-                            <span class="material-symbols-rounded">${g.icon}</span>
+                        <div class="debt-icon">
+                            <span class="material-symbols-rounded">${iconName}</span>
                         </div>
                         <div>
-                            <div style="font-size:1.05rem; font-weight:600; color:var(--text-main);">${g.nombre}</div>
-                            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Se paga en Lote 1</div>
+                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main);">${d.nombre} ${ow}</div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Mín: ${fmt(d.minimo)}</div>
                         </div>
                     </div>
                     <div class="text-end">
-                        <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(g.monto)}</div>
+                        <div style="font-size:1.15rem; font-weight:700;" class="text-danger-custom">${fmt(d.saldo)}</div>
                     </div>
                 </div>`;
             });
-            document.getElementById('listaGastosFijos').innerHTML = fijosHtml;
+            
+            if (htmlNieve === '') {
+                htmlNieve = `<div class="p-4 text-center text-muted small"><span class="material-symbols-rounded d-block mb-2 text-success-custom" style="font-size:32px;">check_circle</span> No hay deudas pendientes en este Lote.</div>`;
+            }
+            document.getElementById('listaDeudasNieve').innerHTML = htmlNieve;
 
-            // Render Deudas Activas
-            let html = '', pagadas = true;
+            // Render Deudas Detalladas (All)
+            let htmlAll = '', pagadas = true;
             [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
                 if(d.saldo > 0) pagadas = false;
                 const isPaid = d.saldo === 0;
                 const iconName = getIconForDebt(d.nombre);
-                html += `
+                let ow = d.owner && d.owner !== 'Hogar' ? `<span class="badge bg-secondary bg-opacity-10 text-secondary ms-1" style="font-size:0.6rem">${d.owner}</span>` : '';
+                htmlAll += `
                 <div class="debt-item" style="${isPaid ? 'opacity: 0.4;' : ''}">
                     <div class="d-flex align-items-center">
                         <div class="debt-icon ${isPaid ? 'bg-success bg-opacity-10 text-success' : ''}">
                             <span class="material-symbols-rounded">${isPaid ? 'check_circle' : iconName}</span>
                         </div>
                         <div>
-                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main); ${isPaid ? 'text-decoration: line-through;' : ''}">${d.nombre}</div>
+                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main); ${isPaid ? 'text-decoration: line-through;' : ''}">${d.nombre} ${ow}</div>
                             <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Mín: ${fmt(d.minimo)}</div>
                         </div>
                     </div>
@@ -1245,7 +1301,7 @@
                     </div>
                 </div>`;
             });
-            document.getElementById('listaDeudas').innerHTML = html;
+            document.getElementById('listaDeudas').innerHTML = htmlAll;
             
             if(pagadas) { 
                 ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1'>celebration</span> ¡LIBRE DE DEUDAS!"; 
