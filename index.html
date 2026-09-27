@@ -203,7 +203,7 @@
                     <span class="material-symbols-rounded" style="font-size: 16px;">edit</span>
                 </button>
                 <div class="card text-center p-4 profile-card katia" onclick="loginAs('Katia')">
-                    <img id="imgAvatarKatia" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Katia&backgroundColor=ffdfbf" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Katia">
+                    <img id="imgAvatarKatia" src="katia.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Katia">
                     <h5 class="fw-bold mb-0 text-main">Katia</h5>
                 </div>
                 <input type="file" id="uploadKatia" accept="image/*" class="d-none" onchange="handleAvatarUpload(event, 'Katia')">
@@ -615,7 +615,7 @@
                 topAvatar.src = 'bryan.jpg';
                 topAvatar.classList.remove('d-none');
             } else if (profile === 'Katia') {
-                topAvatar.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Katia&backgroundColor=ffdfbf';
+                topAvatar.src = 'katia.jpg';
                 topAvatar.classList.remove('d-none');
             }
             
