@@ -1227,31 +1227,42 @@
             let totalFijos = fijos.reduce((sum, g) => sum + g.monto, 0);
 
             let m = state.ciclo.mes, maxM = m + 30;
-            let html = `<div class="table-responsive"><table class="table table-bordered table-hover align-middle bg-white shadow-sm" style="font-size: 0.85rem;">
-                <thead class="table-light text-muted"><tr>
-                    <th class="text-nowrap text-center">Ciclo Mensual</th>
-                    <th class="text-nowrap text-center">Momento de Pago</th>
-                    <th class="text-nowrap">Destino del Dinero</th>
-                    <th class="text-nowrap text-center">Monto a Inyectar</th>
-                    <th class="text-nowrap text-center">Saldo Restante Deuda</th>
-                    <th class="text-nowrap text-center">Estado Operativo</th>
-                </tr></thead><tbody>`;
+            let html = '';
             
             const l1Nombres = ['Falabella', 'Cencosud', 'Itaú'];
             const l2Nombres = ['Lider', 'Santander', 'Tricot'];
+
+            const getBadgeClass = (estado) => {
+                if(estado === '¡CERRAR TARJETA!') return 'bg-success-custom text-white';
+                if(estado === 'Activa - ¡Casi lista!') return 'bg-warning-custom text-white';
+                if(estado === 'Pagado') return 'bg-light text-muted border';
+                return 'bg-secondary bg-opacity-10 text-secondary';
+            };
 
             while(s.some(x => x.saldo > 0) && m < maxM) {
                 let target = s.filter(x => x.saldo > 0).sort((a,b) => a.saldo - b.saldo)[0];
                 let disp1 = Math.max(0, ing1 - totalFijos);
                 
-                html += `<tr>
-                    <td class="text-nowrap text-center">Mes ${m}</td>
-                    <td class="text-nowrap text-center">Día 5 (Lote 1)</td>
-                    <td class="text-nowrap">Casa Completa</td>
-                    <td class="text-nowrap text-center">${fmt(totalFijos)}</td>
-                    <td class="text-nowrap text-center">-</td>
-                    <td class="text-nowrap text-center text-muted">Pagado</td>
-                </tr>`;
+                html += `<div class="mb-4">
+                    <h5 class="fw-bold text-main mb-3 ps-1">Ciclo: Mes ${m}</h5>
+                    
+                    <!-- LOTE 1 -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-custom-gray py-2 d-flex align-items-center">
+                            <span class="material-symbols-rounded text-primary-custom me-2" style="font-size: 20px;">play_arrow</span>
+                            <span class="fw-bold">Día 5 (Lote 1)</span>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <span class="fw-bold text-main">Casa Completa</span>
+                                    <span class="badge ${getBadgeClass('Pagado')}">Pagado</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small mt-2">
+                                    <span class="text-muted">Inyectado: <strong class="text-main">${fmt(totalFijos)}</strong></span>
+                                    <span class="text-muted">Saldo: <strong>-</strong></span>
+                                </div>
+                            </div>`;
 
                 let l1Deudas = s.filter(x => l1Nombres.includes(x.nombre) && x.saldo > 0);
                 let pagosL1 = {};
@@ -1273,21 +1284,30 @@
                     let p = pagosL1[d.nombre];
                     d.saldo -= p;
                     
-                    let etiqueta = (p > d.minimo) ? "(Mínimo + Ataque Nieve)" : "(Pago Mínimo)";
-                    if (d.saldo === 0 && p <= d.minimo) etiqueta = "(Liquidación Final)";
-                    else if (d.saldo === 0) etiqueta = "(Ataque y Liquidación)";
+                    let etiqueta = (p > d.minimo) ? "Mínimo + Ataque Nieve" : "Pago Mínimo";
+                    if (d.saldo === 0 && p <= d.minimo) etiqueta = "Liquidación Final";
+                    else if (d.saldo === 0) etiqueta = "Ataque y Liquidación";
 
                     let estado = d.saldo === 0 ? "¡CERRAR TARJETA!" : (d.saldo <= d.minimo*2 ? "Activa - ¡Casi lista!" : "Activa");
+                    let inyectadoClass = p > d.minimo ? 'text-danger-custom' : 'text-main';
                     
-                    html += `<tr>
-                        <td class="text-nowrap text-center">Mes ${m}</td>
-                        <td class="text-nowrap text-center">Día 5 (Lote 1)</td>
-                        <td class="text-nowrap">${d.nombre} ${etiqueta}</td>
-                        <td class="text-nowrap text-center">${fmt(p)}</td>
-                        <td class="text-nowrap text-center">${d.saldo === 0 ? '0' : fmt(d.saldo)}</td>
-                        <td class="text-nowrap text-center fw-bold ${d.saldo === 0 ? 'text-success-custom' : (d.saldo <= d.minimo*2 ? 'text-warning-custom' : '')}">${estado}</td>
-                    </tr>`;
+                    html += `
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div>
+                                        <div class="fw-bold text-main">${d.nombre}</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">${etiqueta}</div>
+                                    </div>
+                                    <span class="badge ${getBadgeClass(estado)} ms-2 text-end">${estado}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small mt-2">
+                                    <span class="text-muted">Inyectado: <strong class="${inyectadoClass}">${fmt(p)}</strong></span>
+                                    <span class="text-muted">Saldo: <strong>${d.saldo === 0 ? '0' : fmt(d.saldo)}</strong></span>
+                                </div>
+                            </div>`;
                 });
+                
+                html += `</div></div>`; // Close Lote 1 card
 
                 let disp2 = ing2 + disp1; 
                 let l2Deudas = s.filter(x => l2Nombres.includes(x.nombre) && x.saldo > 0);
@@ -1305,6 +1325,8 @@
                     target = remaining.length > 0 ? remaining[0] : null;
                 }
 
+                let htmlL2 = '';
+
                 if (target && disp2 > 0) {
                     if (l2Nombres.includes(target.nombre)) {
                         let p = Math.min(target.saldo - pagosL2[target.nombre], disp2);
@@ -1315,14 +1337,21 @@
                         target.saldo -= p;
                         disp2 -= p;
                         let estado = target.saldo === 0 ? "¡CERRAR TARJETA!" : (target.saldo <= target.minimo*2 ? "Activa - ¡Casi lista!" : "Activa");
-                        html += `<tr>
-                            <td class="text-nowrap text-center">Mes ${m}</td>
-                            <td class="text-nowrap text-center">Día 15 (Lote 2)</td>
-                            <td class="text-nowrap fw-bold">${target.nombre} (Ataque Nieve Adicional)</td>
-                            <td class="text-nowrap text-center fw-bold">${fmt(p)}</td>
-                            <td class="text-nowrap text-center">${target.saldo === 0 ? '0' : fmt(target.saldo)}</td>
-                            <td class="text-nowrap text-center fw-bold ${target.saldo === 0 ? 'text-success-custom' : (target.saldo <= target.minimo*2 ? 'text-warning-custom' : '')}">${estado}</td>
-                        </tr>`;
+                        
+                        htmlL2 += `
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div>
+                                        <div class="fw-bold text-main">${target.nombre}</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">Ataque Nieve Adicional</div>
+                                    </div>
+                                    <span class="badge ${getBadgeClass(estado)} ms-2 text-end">${estado}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small mt-2">
+                                    <span class="text-muted">Inyectado: <strong class="text-danger-custom">${fmt(p)}</strong></span>
+                                    <span class="text-muted">Saldo: <strong>${target.saldo === 0 ? '0' : fmt(target.saldo)}</strong></span>
+                                </div>
+                            </div>`;
                     }
                 }
 
@@ -1331,25 +1360,47 @@
                     if (p === 0) return; 
                     d.saldo -= p;
                     
-                    let etiqueta = (p > d.minimo) ? "(Ataque Nieve)" : "(Pago Mínimo)";
-                    if (d.saldo === 0 && p <= d.minimo) etiqueta = "(Liquidación Final)";
-                    else if (d.saldo === 0) etiqueta = "(Liquidación Final)";
+                    let etiqueta = (p > d.minimo) ? "Ataque Nieve" : "Pago Mínimo";
+                    if (d.saldo === 0 && p <= d.minimo) etiqueta = "Liquidación Final";
+                    else if (d.saldo === 0) etiqueta = "Liquidación Final";
 
                     let estado = d.saldo === 0 ? "¡CERRAR TARJETA!" : (d.saldo <= d.minimo*2 ? "Activa - ¡Casi lista!" : "Activa");
+                    let inyectadoClass = p > d.minimo ? 'text-danger-custom' : 'text-main';
                     
-                    html += `<tr>
-                        <td class="text-nowrap text-center">Mes ${m}</td>
-                        <td class="text-nowrap text-center">Día 15 (Lote 2)</td>
-                        <td class="text-nowrap">${d.nombre} ${etiqueta}</td>
-                        <td class="text-nowrap text-center">${fmt(p)}</td>
-                        <td class="text-nowrap text-center">${d.saldo === 0 ? '0' : fmt(d.saldo)}</td>
-                        <td class="text-nowrap text-center fw-bold ${d.saldo === 0 ? 'text-success-custom' : (d.saldo <= d.minimo*2 ? 'text-warning-custom' : '')}">${estado}</td>
-                    </tr>`;
+                    htmlL2 += `
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div>
+                                        <div class="fw-bold text-main">${d.nombre}</div>
+                                        <div class="text-muted" style="font-size:0.75rem;">${etiqueta}</div>
+                                    </div>
+                                    <span class="badge ${getBadgeClass(estado)} ms-2 text-end">${estado}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small mt-2">
+                                    <span class="text-muted">Inyectado: <strong class="${inyectadoClass}">${fmt(p)}</strong></span>
+                                    <span class="text-muted">Saldo: <strong>${d.saldo === 0 ? '0' : fmt(d.saldo)}</strong></span>
+                                </div>
+                            </div>`;
                 });
+
+                if(htmlL2 !== '') {
+                    html += `
+                    <!-- LOTE 2 -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-custom-gray py-2 d-flex align-items-center">
+                            <span class="material-symbols-rounded text-success-custom me-2" style="font-size: 20px;">bolt</span>
+                            <span class="fw-bold">Día 15 (Lote 2)</span>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            ${htmlL2}
+                        </div>
+                    </div>`;
+                }
+                
+                html += `</div>`; // Close Month div
 
                 m++;
             }
-            html += `</tbody></table></div>`;
             document.getElementById('proyeccionContainer').innerHTML = html;
         }
 
