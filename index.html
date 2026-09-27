@@ -497,7 +497,11 @@
         };
 
         const GASTOS_FIJOS = [
-            { nombre: 'Casa Completa (Dividendo, Luz, Agua)', monto: 584000, icon: 'home' }
+            { nombre: 'Dividendo', monto: 462000, icon: 'home' },
+            { nombre: 'Internet', monto: 21000, icon: 'wifi' },
+            { nombre: 'Agua', monto: 31000, icon: 'water_drop' },
+            { nombre: 'Luz', monto: 30000, icon: 'lightbulb' },
+            { nombre: 'Cámara', monto: 40000, icon: 'videocam' }
         ];
 
         const DEUDAS_BASE = [
@@ -637,6 +641,12 @@
         }
 
         async function loadData() {
+            // Migrar gastos fijos antiguos
+            let oldFijos = localStorage.getItem('nexa_gastos_fijos');
+            if (oldFijos && oldFijos.includes('Casa Completa (Dividendo, Luz, Agua)')) {
+                localStorage.setItem('nexa_gastos_fijos', JSON.stringify(GASTOS_FIJOS));
+            }
+
             let { data: ciclo } = await supabase.from('Finanzas_Ciclo').select('*').eq('user_id', currentUser.id).single();
             if (!ciclo) {
                 const { data: newCiclo } = await supabase.from('Finanzas_Ciclo').insert([{ user_id: currentUser.id }]).select().single();
