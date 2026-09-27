@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Plan Bola de Nieve</title>
     
-    <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Snowball">
     <link rel="apple-touch-icon" href="/icon.png">
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
@@ -32,114 +29,146 @@
             font-family: 'Inter', system-ui, -apple-system, sans-serif; 
             min-height: 100vh;
         }
-        .app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding-bottom: 2rem;
-        }
+        .app-container { max-width: 600px; margin: 0 auto; padding-bottom: 5rem; }
         .card { 
             background-color: var(--bg-card); 
             border: 1px solid var(--border-color); 
             border-radius: 16px; 
             margin-bottom: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
         .card-header {
             background-color: rgba(255,255,255,0.02);
             border-bottom: 1px solid var(--border-color);
             border-top-left-radius: 16px !important;
             border-top-right-radius: 16px !important;
-            font-weight: 600;
-            padding: 1rem 1.25rem;
+            font-weight: 600; padding: 1rem 1.25rem;
         }
-        .card-body { padding: 1.25rem; }
         .text-accent { color: var(--accent-blue) !important; }
-        .text-warning-custom { color: #F59E0B !important; }
         .text-success-custom { color: var(--accent-green) !important; }
         .text-danger-custom { color: var(--accent-red) !important; }
-        .text-muted-custom { color: var(--text-muted) !important; }
         
-        .btn-custom { 
-            font-weight: 600; 
-            padding: 14px; 
-            border-radius: 12px; 
-            border: none;
-            transition: transform 0.1s, opacity 0.2s;
-        }
-        .btn-custom:active { transform: scale(0.97); }
-        .btn-custom:disabled { opacity: 0.5; transform: none; }
+        .btn-custom { font-weight: 600; padding: 14px; border-radius: 12px; border: none; }
         .btn-primary-custom { background-color: var(--accent-blue); color: white; }
         .btn-success-custom { background-color: var(--accent-green); color: white; }
         
         .debt-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px; border-bottom: 1px solid var(--border-color);
         }
         .debt-item:last-child { border-bottom: none; }
         .debt-name { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
         .debt-min { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
-        .debt-balance { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px; }
-        .paid-badge { opacity: 0.4; }
-        .paid-badge .debt-name { text-decoration: line-through; }
+        .debt-balance { font-size: 1.15rem; font-weight: 700; }
         
-        .top-header {
-            padding: 2rem 0 1.5rem 0;
+        /* Nav Bottom */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background-color: var(--bg-card); border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            z-index: 1000;
         }
+        .nav-item {
+            text-align: center; color: var(--text-muted); cursor: pointer; flex: 1; font-size: 0.9rem;
+        }
+        .nav-item.active { color: var(--accent-blue); font-weight: bold; }
+        
+        .d-none { display: none !important; }
+        .table-dark { background-color: transparent; color: var(--text-main); }
+        .table-dark th { border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: normal; }
+        .table-dark td { border-bottom: 1px solid var(--border-color); padding: 12px 5px; font-size: 0.9rem; }
+        .table-dark tr:last-child td { border-bottom: none; }
+        
+        /* Form inputs for expenses */
+        .form-control { background-color: #13131A; border: 1px solid var(--border-color); color: white; }
+        .form-control:focus { background-color: #13131A; color: white; border-color: var(--accent-blue); box-shadow: none; }
     </style>
 </head>
 <body>
 
-    <div class="container app-container">
-        <div class="text-center top-header">
-            <h2 class="fw-bold mb-1">Bola de Nieve</h2>
-            <div class="badge bg-secondary bg-opacity-25 text-light px-3 py-2 rounded-pill mt-2" id="mesActualBadge" style="font-size: 0.9rem;">Mes Actual: 1</div>
+    <div class="container app-container pt-4">
+        
+        <!-- VISTA 1: BOLA DE NIEVE -->
+        <div id="view-nieve">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold mb-1">Bola de Nieve</h2>
+                <div class="badge bg-secondary bg-opacity-25 text-light px-3 py-2 rounded-pill mt-2" id="mesActualBadge">Mes Actual: 1</div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Flujo de Caja (Pozo)</span>
+                    <span id="pozoActual" class="text-success-custom fs-4 fw-bold">$0</span>
+                </div>
+                <div class="card-body text-center py-4">
+                    <p class="mb-2 small text-muted text-uppercase fw-bold">Estado del ciclo</p>
+                    <h4 id="estadoCiclo" class="text-accent fw-bold mb-0">Esperando Lote 1</h4>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <button id="btnLote1" class="btn btn-primary-custom w-100 btn-custom" onclick="ejecutarLote1()">
+                        Lote 1 <br><small class="fw-normal opacity-75">(Día 5)</small>
+                    </button>
+                </div>
+                <div class="col-6">
+                    <button id="btnLote2" class="btn btn-success-custom w-100 btn-custom" onclick="ejecutarLote2()" disabled>
+                        Lote 2 <br><small class="fw-normal opacity-75">(Ataque)</small>
+                    </button>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-3 px-1">Estado de Tarjetas</h5>
+            <div class="card" id="listaDeudas"></div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-sm btn-outline-danger px-4 rounded-pill" onclick="reiniciarPlan()">Reiniciar Progreso</button>
+            </div>
         </div>
 
-        <!-- Estado Financiero -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Flujo de Caja (Pozo)</span>
-                <span id="pozoActual" class="text-success-custom fs-4 fw-bold">$0</span>
-            </div>
-            <div class="card-body text-center py-4">
-                <p class="mb-2 small text-muted-custom text-uppercase fw-bold tracking-wide">Estado del ciclo</p>
-                <h4 id="estadoCiclo" class="text-accent fw-bold mb-0">Esperando Lote 1</h4>
+        <!-- VISTA 2: PROYECCIÓN -->
+        <div id="view-plan" class="d-none">
+            <h3 class="fw-bold mb-4 text-center">Plan Proyectado</h3>
+            <p class="text-muted text-center small mb-4">Simulación automática basada en tus saldos actuales hasta liquidar todas las deudas.</p>
+            <div class="card p-2" style="overflow-x: auto;">
+                <div id="proyeccionContainer"></div>
             </div>
         </div>
 
-        <!-- Acciones -->
-        <div class="row g-3 mb-4">
-            <div class="col-6">
-                <button id="btnLote1" class="btn btn-primary-custom w-100 btn-custom shadow-sm" onclick="ejecutarLote1()">
-                    Lote 1 <br><small class="fw-normal opacity-75">(Día 5)</small>
-                </button>
+        <!-- VISTA 3: OTROS GASTOS -->
+        <div id="view-gastos" class="d-none">
+            <h3 class="fw-bold mb-4 text-center">Otros Gastos</h3>
+            
+            <div class="card p-3 mb-4">
+                <form id="formGasto">
+                    <div class="mb-2">
+                        <input type="text" id="descGasto" class="form-control" placeholder="Ej: Supermercado, Farmacia..." required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="number" id="montoGasto" class="form-control" placeholder="Monto ($)" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 btn-custom py-2">Registrar Gasto</button>
+                </form>
             </div>
-            <div class="col-6">
-                <button id="btnLote2" class="btn btn-success-custom w-100 btn-custom shadow-sm" onclick="ejecutarLote2()" disabled>
-                    Lote 2 <br><small class="fw-normal opacity-75">(Ataque)</small>
-                </button>
-            </div>
+
+            <h5 class="fw-bold mb-3 px-1 d-flex justify-content-between">
+                <span>Historial</span>
+                <span id="totalGastosExtra" class="text-danger-custom">$0</span>
+            </h5>
+            <div class="card" id="listaGastosExtra"></div>
         </div>
 
-        <!-- Lista de Deudas -->
-        <div class="d-flex justify-content-between align-items-end mb-3 px-1">
-            <h5 class="fw-bold mb-0">Estado de Tarjetas</h5>
-        </div>
-        <div class="card" id="listaDeudas">
-            <!-- Renderizado por JS -->
-        </div>
+    </div>
 
-        <div class="text-center mt-5">
-            <button class="btn btn-sm btn-outline-danger px-4 rounded-pill" onclick="reiniciarPlan()">Reiniciar Progreso</button>
-        </div>
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('nieve', this)">🎯 Nieve</div>
+        <div class="nav-item" onclick="switchTab('plan', this)">📅 Plan</div>
+        <div class="nav-item" onclick="switchTab('gastos', this)">🛒 Gastos</div>
     </div>
 
     <script>
-        // CONFIGURACIÓN INICIAL HARDCODED
+        // CONFIGURACIÓN INICIAL
         const DEUDAS_INICIALES = [
             { id: 'tricot', nombre: 'Tricot', saldo: 164886, minimo: 30000 },
             { id: 'santander', nombre: 'Santander', saldo: 506857, minimo: 40000 },
@@ -149,172 +178,200 @@
             { id: 'cencosud', nombre: 'Cencosud', saldo: 1195320, minimo: 85000 }
         ];
 
-        const INGRESO_DIA_5 = 920000;
-        const GASTO_FIJO_CASA = 584000;
-        const INGRESO_DIA_15 = 250000;
-
-        // ESTADO GLOBAL
         let state = {
-            mes: 1,
-            fase: 0, // 0 = Esperando Lote 1, 1 = Esperando Lote 2
-            pozo: 0,
-            deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES))
+            mes: 1, fase: 0, pozo: 0,
+            deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES)),
+            gastosExtra: []
         };
 
-        // INICIALIZACIÓN
         function init() {
-            const savedState = localStorage.getItem('snowballState');
-            if (savedState) {
-                state = JSON.parse(savedState);
-            }
-            render();
+            const saved = localStorage.getItem('snowballData');
+            if (saved) state = JSON.parse(saved);
+            if (!state.gastosExtra) state.gastosExtra = [];
+            renderNieve();
+            renderGastos();
         }
 
         function saveState() {
-            localStorage.setItem('snowballState', JSON.stringify(state));
-            render();
+            localStorage.setItem('snowballData', JSON.stringify(state));
+            renderNieve();
+            renderGastos();
         }
 
-        // LÓGICA DE NEGOCIO
+        // TABS LOGIC
+        function switchTab(tab, el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            
+            document.getElementById('view-nieve').classList.add('d-none');
+            document.getElementById('view-plan').classList.add('d-none');
+            document.getElementById('view-gastos').classList.add('d-none');
+            
+            document.getElementById('view-' + tab).classList.remove('d-none');
+
+            if(tab === 'plan') renderPlanProyectado();
+        }
+
+        // VISTA: BOLA DE NIEVE
         function ejecutarLote1() {
             if (state.fase !== 0) return;
-
-            let disponible = INGRESO_DIA_5 - GASTO_FIJO_CASA; // 336.000
-            
-            // Pagos mínimos de Falabella, Cencosud e Itaú
-            const aPagar = ['falabella', 'cencosud', 'itau'];
-            aPagar.forEach(id => {
-                let deuda = state.deudas.find(d => d.id === id);
-                if (deuda && deuda.saldo > 0) {
-                    let pago = Math.min(deuda.saldo, deuda.minimo);
-                    disponible -= pago;
-                    deuda.saldo -= pago;
+            let disp = 920000 - 584000;
+            ['falabella', 'cencosud', 'itau'].forEach(id => {
+                let d = state.deudas.find(x => x.id === id);
+                if (d && d.saldo > 0) {
+                    let pago = Math.min(d.saldo, d.minimo);
+                    disp -= pago; d.saldo -= pago;
                 }
             });
-
-            // Guardar remanente en pozo y avanzar fase
-            state.pozo = disponible;
-            state.fase = 1;
-            saveState();
+            state.pozo = disp; state.fase = 1; saveState();
         }
 
         function ejecutarLote2() {
             if (state.fase !== 1) return;
+            let disp = 250000 + state.pozo;
+            
+            // Lote 2 IDs según la regla original
+            let lote2Ids = ['lider', 'santander', 'tricot'];
+            let activas = state.deudas.filter(d => lote2Ids.includes(d.id) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
+            
+            if (activas.length === 0) {
+                // Si Lote 2 ya se pagó, el ataque va al Lote 1
+                activas = state.deudas.filter(d => !lote2Ids.includes(d.id) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
+            }
 
-            // Ingreso quincena + pozo anterior
-            let disponible = INGRESO_DIA_15 + state.pozo;
-
-            // Pagos mínimos de Lider, Santander (y Tricot, si asumimos que se paga aquí el mínimo para que no quede impago antes del ataque)
-            // NOTA: El prompt no especificó el mínimo de Tricot en los lotes, pero tiene $30.000 asignados. 
-            // Pagaremos Lider y Santander como se indicó explícitamente.
-            const aPagar = ['lider', 'santander'];
-            aPagar.forEach(id => {
-                let deuda = state.deudas.find(d => d.id === id);
-                if (deuda && deuda.saldo > 0) {
-                    let pago = Math.min(deuda.saldo, deuda.minimo);
-                    disponible -= pago;
-                    deuda.saldo -= pago;
+            if (activas.length > 0) {
+                // Pagar mínimos de todas excepto el objetivo (la menor)
+                for (let i = 1; i < activas.length; i++) {
+                    let pago = Math.min(activas[i].saldo, activas[i].minimo);
+                    disp -= pago; activas[i].saldo -= pago;
                 }
-            });
-
-            // Si Tricot tiene saldo, descontar su mínimo por sanidad financiera antes del ataque
-            let tricot = state.deudas.find(d => d.id === 'tricot');
-            if (tricot && tricot.saldo > 0) {
-                let pago = Math.min(tricot.saldo, tricot.minimo);
-                disponible -= pago;
-                tricot.saldo -= pago;
+                // Atacar con TODO el sobrante a la menor
+                let objetivo = activas[0];
+                let ataque = Math.min(objetivo.saldo, disp);
+                disp -= ataque; objetivo.saldo -= ataque;
+                
+                // Si sobra plata, derrama a la siguiente
+                let idx = 1;
+                while(disp > 0 && idx < activas.length) {
+                    let sig = activas[idx];
+                    let spill = Math.min(sig.saldo, disp);
+                    disp -= spill; sig.saldo -= spill;
+                    idx++;
+                }
             }
 
-            // ATAQUE BOLA DE NIEVE (Pagar deuda activa con menor saldo)
-            let deudasActivas = state.deudas.filter(d => d.saldo > 0);
-            deudasActivas.sort((a, b) => a.saldo - b.saldo);
-
-            if (deudasActivas.length > 0 && disponible > 0) {
-                let deudaObjetivo = deudasActivas[0];
-                let abonoExtra = Math.min(deudaObjetivo.saldo, disponible);
-                deudaObjetivo.saldo -= abonoExtra;
-                disponible -= abonoExtra; // El sobrante real podría guardarse o perderse, lo dejamos en 0 para simplificar.
-            }
-
-            // Reiniciar para el próximo mes
-            state.pozo = 0;
-            state.fase = 0;
-            state.mes += 1;
-            saveState();
+            state.pozo = 0; state.fase = 0; state.mes += 1; saveState();
         }
 
         function reiniciarPlan() {
-            if (confirm("¿Estás seguro de reiniciar todo el progreso a los saldos iniciales?")) {
-                localStorage.removeItem('snowballState');
-                state = {
-                    mes: 1,
-                    fase: 0,
-                    pozo: 0,
-                    deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES))
-                };
+            if(confirm("¿Reiniciar progreso?")) {
+                localStorage.removeItem('snowballData');
+                state = { mes: 1, fase: 0, pozo: 0, deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES)), gastosExtra: [] };
                 saveState();
             }
         }
 
-        // RENDERIZADO UI
-        function formatMoney(amount) {
-            return '$' + amount.toLocaleString('es-CL');
-        }
+        function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
 
-        function render() {
+        function renderNieve() {
             document.getElementById('mesActualBadge').textContent = `Mes Actual: ${state.mes}`;
-            document.getElementById('pozoActual').textContent = formatMoney(state.pozo);
+            document.getElementById('pozoActual').textContent = fmt(state.pozo);
             
-            const btnLote1 = document.getElementById('btnLote1');
-            const btnLote2 = document.getElementById('btnLote2');
-            const estadoCiclo = document.getElementById('estadoCiclo');
-
+            const b1 = document.getElementById('btnLote1'), b2 = document.getElementById('btnLote2'), ec = document.getElementById('estadoCiclo');
             if (state.fase === 0) {
-                btnLote1.disabled = false;
-                btnLote2.disabled = true;
-                estadoCiclo.textContent = "Esperando Lote 1 (Día 5)";
-                estadoCiclo.className = "text-accent mb-0";
+                b1.disabled = false; b2.disabled = true; ec.textContent = "Esperando Lote 1 (Día 5)"; ec.className = "text-accent mb-0";
             } else {
-                btnLote1.disabled = true;
-                btnLote2.disabled = false;
-                estadoCiclo.textContent = "Esperando Lote 2 (Ataque)";
-                estadoCiclo.className = "text-warning mb-0";
+                b1.disabled = true; b2.disabled = false; ec.textContent = "Esperando Lote 2 (Ataque)"; ec.className = "text-warning mb-0";
             }
 
-            // Render Deudas ordenadas por saldo para visualizar la bola de nieve
-            const lista = document.getElementById('listaDeudas');
-            lista.innerHTML = '';
-            
-            // Hacemos una copia para ordenar visualmente sin alterar el array original
-            let deudasVisual = [...state.deudas].sort((a, b) => a.saldo - b.saldo);
-            let todasPagadas = true;
-
-            deudasVisual.forEach(d => {
-                if (d.saldo > 0) todasPagadas = false;
-                
-                const row = document.createElement('div');
-                row.className = `debt-item ${d.saldo === 0 ? 'paid-badge' : ''}`;
-                row.innerHTML = `
+            let html = '', pagadas = true;
+            [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
+                if(d.saldo > 0) pagadas = false;
+                html += `
+                <div class="debt-item" style="${d.saldo === 0 ? 'opacity: 0.4;' : ''}">
                     <div>
-                        <div class="debt-name">${d.nombre}</div>
-                        <div class="debt-min">Mín: ${formatMoney(d.minimo)}</div>
+                        <div class="debt-name" style="${d.saldo === 0 ? 'text-decoration: line-through;' : ''}">${d.nombre}</div>
+                        <div class="debt-min">Mín: ${fmt(d.minimo)}</div>
                     </div>
                     <div class="text-end">
-                        <div class="debt-balance text-${d.saldo === 0 ? 'success-custom' : 'danger-custom'}">${formatMoney(d.saldo)}</div>
+                        <div class="debt-balance text-${d.saldo === 0 ? 'success-custom' : 'danger-custom'}">${fmt(d.saldo)}</div>
                     </div>
-                `;
-                lista.appendChild(row);
+                </div>`;
             });
-
-            if (todasPagadas) {
-                estadoCiclo.textContent = "¡LIBRE DE DEUDAS!";
-                estadoCiclo.className = "text-success mb-0 fw-bold";
-                btnLote1.disabled = true;
-                btnLote2.disabled = true;
-            }
+            document.getElementById('listaDeudas').innerHTML = html;
+            if(pagadas) { ec.textContent = "¡LIBRE DE DEUDAS!"; ec.className = "text-success-custom fw-bold mb-0"; b1.disabled = b2.disabled = true; }
         }
 
-        // Arrancar
+        // VISTA: PROYECCIÓN
+        function renderPlanProyectado() {
+            let s = JSON.parse(JSON.stringify(state.deudas));
+            let m = state.mes, maxM = m + 40;
+            let html = `<table class="table table-dark table-borderless mb-0"><thead><tr><th>Mes</th><th>Tarjeta</th><th>Pago</th><th>Restante</th></tr></thead><tbody>`;
+            
+            while(s.some(x => x.saldo > 0) && m < maxM) {
+                let disp1 = 336000;
+                ['falabella','cencosud','itau'].forEach(id => {
+                    let d = s.find(x=>x.id===id);
+                    if(d && d.saldo > 0){ let p = Math.min(d.saldo, d.minimo); disp1 -= p; d.saldo -= p; html += `<tr><td>${m}</td><td>${d.nombre}</td><td><span class="text-muted">Min</span> ${fmt(p)}</td><td>${fmt(d.saldo)}</td></tr>`; }
+                });
+                
+                let disp2 = 250000 + disp1;
+                let l2Ids = ['lider','santander','tricot'];
+                let act = s.filter(x=>l2Ids.includes(x.id) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
+                if(act.length===0) act = s.filter(x=>!l2Ids.includes(x.id) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
+                
+                if(act.length>0) {
+                    for(let i=1; i<act.length; i++) {
+                        let p = Math.min(act[i].saldo, act[i].minimo); disp2 -= p; act[i].saldo -= p;
+                        html += `<tr><td>${m}</td><td>${act[i].nombre}</td><td><span class="text-muted">Min</span> ${fmt(p)}</td><td>${fmt(act[i].saldo)}</td></tr>`;
+                    }
+                    let obj = act[0], p = Math.min(obj.saldo, disp2); disp2 -= p; obj.saldo -= p;
+                    html += `<tr><td>${m}</td><td><strong class="text-accent">${obj.nombre}</strong></td><td><strong class="text-success-custom">Nieve</strong> ${fmt(p)}</td><td>${fmt(obj.saldo)}</td></tr>`;
+                }
+                m++;
+            }
+            document.getElementById('proyeccionContainer').innerHTML = html + `</tbody></table>`;
+        }
+
+        // VISTA: GASTOS EXTRA
+        document.getElementById('formGasto').addEventListener('submit', (e) => {
+            e.preventDefault();
+            state.gastosExtra.push({
+                id: Date.now(),
+                desc: document.getElementById('descGasto').value,
+                monto: parseFloat(document.getElementById('montoGasto').value),
+                fecha: new Date().toLocaleDateString()
+            });
+            document.getElementById('formGasto').reset();
+            saveState();
+        });
+
+        function borrarGasto(id) {
+            state.gastosExtra = state.gastosExtra.filter(g => g.id !== id);
+            saveState();
+        }
+
+        function renderGastos() {
+            let html = '', total = 0;
+            [...state.gastosExtra].reverse().forEach(g => {
+                total += g.monto;
+                html += `
+                <div class="debt-item py-3">
+                    <div>
+                        <div style="font-weight: 500;">${g.desc}</div>
+                        <small class="text-muted">${g.fecha}</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold me-3 text-main">${fmt(g.monto)}</span>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="borrarGasto(${g.id})">&times;</button>
+                    </div>
+                </div>`;
+            });
+            if(html === '') html = '<div class="p-3 text-center text-muted">No hay gastos registrados</div>';
+            document.getElementById('listaGastosExtra').innerHTML = html;
+            document.getElementById('totalGastosExtra').textContent = fmt(total);
+        }
+
         init();
     </script>
 </body>
