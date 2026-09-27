@@ -326,6 +326,24 @@
                 </div>
             </div>
 
+            <!-- Contadores de Totalizadores -->
+            <div class="row g-2 mb-4">
+                <div class="col-6">
+                    <div class="card p-3 text-center h-100 border-0 shadow-sm">
+                        <span class="material-symbols-rounded text-danger-custom mb-1 fs-3">account_balance</span>
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Deuda Total Restante</small>
+                        <div id="totalDeudaContador" class="fw-bold fs-5 mt-1 text-main">$0</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card p-3 text-center h-100 border-0 shadow-sm">
+                        <span class="material-symbols-rounded text-warning-custom mb-1 fs-3">credit_card</span>
+                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem;">Tarjetas Activas</small>
+                        <div id="tarjetasActivasContador" class="fw-bold fs-5 mt-1 text-main">0</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-3 mb-4">
                 <div class="col-6">
                     <button id="btnLote1" class="btn btn-primary-custom w-100 btn-custom d-flex flex-column align-items-center justify-content-center" onclick="prepararLote1()" style="height: auto; padding: 12px 8px;">
@@ -1111,9 +1129,19 @@
         });
 
         // --- RENDERIZADO PRINCIPAL ---
-        function renderNieve() {
+        function renderNieve(recalcPozo = false) {
             document.getElementById('mesBadge').textContent = state.ciclo.mes;
             document.getElementById('pozoActual').textContent = fmt(state.ciclo.pozo);
+            
+            // Actualizar Totalizadores
+            let totalDeuda = 0;
+            let tarjetasActivas = 0;
+            state.deudas.forEach(d => {
+                totalDeuda += d.saldo;
+                if (d.saldo > 0) tarjetasActivas++;
+            });
+            document.getElementById('totalDeudaContador').textContent = fmt(totalDeuda);
+            document.getElementById('tarjetasActivasContador').textContent = tarjetasActivas;
             
             const b1 = document.getElementById('btnLote1'), b2 = document.getElementById('btnLote2'), ec = document.getElementById('estadoCiclo');
             if (state.ciclo.fase === 0) {
