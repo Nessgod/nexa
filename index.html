@@ -481,22 +481,60 @@
         // --- SISTEMA DE CHECKLIST (MODAL) ---
         let modalInstance = null;
 
+        window.recalcularLote1 = () => {
+            if(pendingLoteType !== 1) return;
+            const ing = parseFloat(document.getElementById('lote1Ingreso').value) || 0;
+            const gFijo = parseFloat(document.getElementById('lote1GastoBase').value) || 0;
+            
+            localStorage.setItem('nexa_lote1_ingreso', ing);
+            localStorage.setItem('nexa_lote1_gasto', gFijo);
+            
+            let disp = ing - gFijo;
+            let sumTarjetas = 0;
+            
+            ['Falabella', 'Cencosud', 'Itaú'].forEach(nombre => {
+                let d = state.deudas.find(x => x.nombre === nombre);
+                if (d && d.saldo > 0) sumTarjetas += Math.min(d.saldo, d.minimo);
+            });
+            
+            disp -= sumTarjetas;
+            pendingLoteUpdates.disp = disp;
+            
+            const sobranteEl = document.getElementById('lote1Sobrante');
+            sobranteEl.textContent = fmt(disp);
+            sobranteEl.className = disp < 0 ? 'fs-5 fw-bold text-danger-custom' : 'fs-5 fw-bold text-success-custom';
+            
+            // Actualizar vista principal en vivo si está detrás
+            renderNieve(true);
+        };
+
         window.prepararLote1 = () => {
             if (state.ciclo.fase !== 0) return;
             pendingLoteType = 1;
-            const ingreso = 920000;
-            const gastoFijo = 584000;
+            
+            const ingreso = parseFloat(localStorage.getItem('nexa_lote1_ingreso')) || 920000;
+            const gastoFijo = parseFloat(localStorage.getItem('nexa_lote1_gasto')) || 584000;
             let disp = ingreso - gastoFijo;
+            
             let checklistHTML = `
                 <div class="mb-3 pb-3 border-bottom">
                     <h6 class="fw-bold text-success-custom mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">account_balance_wallet</span> Ingreso Lote 1</h6>
-                    <div class="d-flex justify-content-between"><span>Fondo Día 5</span> <strong>+${fmt(ingreso)}</strong></div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span>Fondo Día 5</span>
+                        <div class="input-group input-group-sm" style="width: 140px;">
+                            <span class="input-group-text bg-transparent text-muted border-end-0">$</span>
+                            <input type="number" id="lote1Ingreso" class="form-control border-start-0 text-end fw-bold px-1" value="${ingreso}" oninput="recalcularLote1()">
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-3 pb-3 border-bottom">
-                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos</h6>
-                    <div class="d-flex justify-content-between text-danger-custom">
-                        <label><input type="checkbox" checked disabled class="me-2">Casa Completa</label>
-                        <strong>-${fmt(gastoFijo)}</strong>
+                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos (Editables)</h6>
+                    <div class="d-flex justify-content-between align-items-center mt-2 text-danger-custom">
+                        <label class="d-flex align-items-center"><input type="checkbox" checked disabled class="me-2" style="opacity: 0.6;">Casa Completa</label>
+                        <div class="input-group input-group-sm" style="width: 140px;">
+                            <span class="input-group-text bg-transparent text-danger-custom border-end-0" style="border-color: rgba(220, 38, 38, 0.3);">$</span>
+                            <input type="number" id="lote1GastoBase" class="form-control border-start-0 text-end fw-bold text-danger-custom px-1" style="border-color: rgba(220, 38, 38, 0.3);" value="${gastoFijo}" oninput="recalcularLote1()">
+                        </div>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -511,8 +549,8 @@
                     disp -= pago;
                     updates.push({ ...d, saldo: d.saldo - pago, pagoRealizado: pago });
                     checklistHTML += `
-                    <div class="d-flex justify-content-between text-danger-custom mt-1">
-                        <label><input type="checkbox" checked disabled class="me-2">${d.nombre} (Mínimo)</label>
+                    <div class="d-flex justify-content-between text-danger-custom mt-1 align-items-center" style="opacity: 0.85;">
+                        <label class="d-flex align-items-center"><input type="checkbox" checked disabled class="me-2">${d.nombre} (Mínimo)</label>
                         <strong>-${fmt(pago)}</strong>
                     </div>`;
                 }
@@ -522,7 +560,7 @@
                 </div>
                 <div class="mt-4 p-3 bg-custom-gray rounded-3 d-flex justify-content-between align-items-center">
                     <span class="fw-bold text-main">Sobrante al Pozo:</span>
-                    <span class="fs-5 fw-bold text-success-custom">${fmt(disp)}</span>
+                    <span id="lote1Sobrante" class="fs-5 fw-bold ${disp < 0 ? 'text-danger-custom' : 'text-success-custom'}">${fmt(disp)}</span>
                 </div>
             `;
             
@@ -677,6 +715,8 @@
 
             // Render Gastos Fijos (Casa)
             let fijosHtml = '';
+            const storedGastoBase = parseFloat(localStorage.getItem('nexa_lote1_gasto')) || GASTOS_FIJOS[0].monto;
+            
             GASTOS_FIJOS.forEach(g => {
                 fijosHtml += `
                 <div class="debt-item bg-transparent">
@@ -690,7 +730,7 @@
                         </div>
                     </div>
                     <div class="text-end">
-                        <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(g.monto)}</div>
+                        <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(storedGastoBase)}</div>
                     </div>
                 </div>`;
             });
