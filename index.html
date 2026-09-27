@@ -947,8 +947,7 @@
             state.ciclo.fase = 0;
             state.ciclo.pozo = 0;
             await supabase.from('Finanzas_Ciclo').update({ mes: 1, fase: 0, pozo: 0 }).eq('user_id', currentUser.id);
-            renderAjustes();
-            renderNieve(true);
+            await loadData();
             alert('El ciclo ha sido reiniciado.');
         }
 
@@ -1334,8 +1333,11 @@
                             <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Mín: ${fmt(d.minimo)}</div>
                         </div>
                     </div>
-                    <div class="text-end">
-                        <div style="font-size:1.15rem; font-weight:700;" class="text-${isPaid ? 'success-custom' : 'danger-custom'}">${fmt(d.saldo)}</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="text-end">
+                            <div style="font-size:1.15rem; font-weight:700;" class="text-${isPaid ? 'success-custom' : 'danger-custom'}">${fmt(d.saldo)}</div>
+                        </div>
+                        ${isPaid ? `<button class="btn btn-sm btn-outline-danger px-2 py-1 ms-2" onclick="eliminarDeuda('${d.id}')" title="Eliminar"><span class="material-symbols-rounded" style="font-size:16px">delete</span></button>` : ''}
                     </div>
                 </div>`;
             });
