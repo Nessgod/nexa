@@ -1183,38 +1183,136 @@
 
         function renderPlanProyectado() {
             let s = JSON.parse(JSON.stringify(state.deudas));
-            let m = state.ciclo.mes, maxM = m + 40;
-            let html = `<table class="table-custom">
-                <thead><tr>
-                    <th>Mes</th><th>Tarjeta</th><th>Pago</th><th>Restante</th>
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            let ing1 = parseFloat(localStorage.getItem('nexa_lote1_ingreso')) || 920000;
+            let ing2 = parseFloat(localStorage.getItem('nexa_lote2_ingreso')) || 250000;
+            let totalFijos = fijos.reduce((sum, g) => sum + g.monto, 0);
+
+            let m = state.ciclo.mes, maxM = m + 30;
+            let html = `<div class="table-responsive"><table class="table table-bordered table-hover align-middle bg-white shadow-sm" style="font-size: 0.85rem;">
+                <thead class="table-light text-muted"><tr>
+                    <th class="text-nowrap text-center">Ciclo Mensual</th>
+                    <th class="text-nowrap text-center">Momento de Pago</th>
+                    <th class="text-nowrap">Destino del Dinero</th>
+                    <th class="text-nowrap text-center">Monto a Inyectar</th>
+                    <th class="text-nowrap text-center">Saldo Restante Deuda</th>
+                    <th class="text-nowrap text-center">Estado Operativo</th>
                 </tr></thead><tbody>`;
             
+            const l1Nombres = ['Falabella', 'Cencosud', 'Itaú'];
+            const l2Nombres = ['Lider', 'Santander', 'Tricot'];
+
             while(s.some(x => x.saldo > 0) && m < maxM) {
-                let disp1 = 336000;
-                ['Falabella','Cencosud','Itaú'].forEach(nombre => {
-                    let d = s.find(x=>x.nombre===nombre);
-                    if(d && d.saldo > 0){ 
-                        let p = Math.min(d.saldo, d.minimo); disp1 -= p; d.saldo -= p; 
-                        html += `<tr><td>${m}</td><td class="fw-medium">${d.nombre}</td><td><span class="text-muted small">Min</span> ${fmt(p)}</td><td class="fw-bold">${fmt(d.saldo)}</td></tr>`; 
-                    }
+                let target = s.filter(x => x.saldo > 0).sort((a,b) => a.saldo - b.saldo)[0];
+                let disp1 = Math.max(0, ing1 - totalFijos);
+                
+                html += `<tr>
+                    <td class="text-nowrap text-center">Mes ${m}</td>
+                    <td class="text-nowrap text-center">Día 5 (Lote 1)</td>
+                    <td class="text-nowrap">Casa Completa</td>
+                    <td class="text-nowrap text-center">${fmt(totalFijos)}</td>
+                    <td class="text-nowrap text-center">-</td>
+                    <td class="text-nowrap text-center text-muted">Pagado</td>
+                </tr>`;
+
+                let l1Deudas = s.filter(x => l1Nombres.includes(x.nombre) && x.saldo > 0);
+                let pagosL1 = {};
+                l1Deudas.forEach(d => { pagosL1[d.nombre] = 0; });
+                
+                l1Deudas.forEach(d => {
+                    let p = Math.min(d.saldo, d.minimo);
+                    pagosL1[d.nombre] += p;
+                    disp1 -= p;
                 });
-                
-                let disp2 = 250000 + disp1;
-                let l2Nombres = ['Lider','Santander','Tricot'];
-                let act = s.filter(x=>l2Nombres.includes(x.nombre) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
-                if(act.length===0) act = s.filter(x=>!l2Nombres.includes(x.nombre) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
-                
-                if(act.length>0) {
-                    for(let i=1; i<act.length; i++) {
-                        let p = Math.min(act[i].saldo, act[i].minimo); disp2 -= p; act[i].saldo -= p;
-                        html += `<tr><td>${m}</td><td class="fw-medium">${act[i].nombre}</td><td><span class="text-muted small">Min</span> ${fmt(p)}</td><td class="fw-bold">${fmt(act[i].saldo)}</td></tr>`;
-                    }
-                    let obj = act[0], p = Math.min(obj.saldo, disp2); disp2 -= p; obj.saldo -= p;
-                    html += `<tr><td>${m}</td><td class="text-accent fw-bold">${obj.nombre}</td><td><span class="text-success-custom small fw-bold"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:middle;">snowing</span></span> ${fmt(p)}</td><td class="fw-bold">${fmt(obj.saldo)}</td></tr>`;
+
+                if (target && l1Nombres.includes(target.nombre) && disp1 > 0) {
+                    let p = Math.min(target.saldo - pagosL1[target.nombre], disp1);
+                    pagosL1[target.nombre] += p;
+                    disp1 -= p;
                 }
+
+                l1Deudas.forEach(d => {
+                    let p = pagosL1[d.nombre];
+                    d.saldo -= p;
+                    
+                    let etiqueta = (p > d.minimo) ? "(Mínimo + Ataque Nieve)" : "(Pago Mínimo)";
+                    if (d.saldo === 0 && p <= d.minimo) etiqueta = "(Liquidación Final)";
+                    else if (d.saldo === 0) etiqueta = "(Ataque y Liquidación)";
+
+                    let estado = d.saldo === 0 ? "¡CERRAR TARJETA!" : (d.saldo <= d.minimo*2 ? "Activa - ¡Casi lista!" : "Activa");
+                    
+                    html += `<tr>
+                        <td class="text-nowrap text-center">Mes ${m}</td>
+                        <td class="text-nowrap text-center">Día 5 (Lote 1)</td>
+                        <td class="text-nowrap">${d.nombre} ${etiqueta}</td>
+                        <td class="text-nowrap text-center">${fmt(p)}</td>
+                        <td class="text-nowrap text-center">${d.saldo === 0 ? '0' : fmt(d.saldo)}</td>
+                        <td class="text-nowrap text-center fw-bold ${d.saldo === 0 ? 'text-success-custom' : (d.saldo <= d.minimo*2 ? 'text-warning-custom' : '')}">${estado}</td>
+                    </tr>`;
+                });
+
+                let disp2 = ing2 + disp1; 
+                let l2Deudas = s.filter(x => l2Nombres.includes(x.nombre) && x.saldo > 0);
+                let pagosL2 = {};
+                l2Deudas.forEach(d => { pagosL2[d.nombre] = 0; });
+                
+                l2Deudas.forEach(d => {
+                    let p = Math.min(d.saldo, d.minimo);
+                    pagosL2[d.nombre] += p;
+                    disp2 -= p;
+                });
+
+                if (target.saldo === 0) {
+                    let remaining = s.filter(x => x.saldo > 0).sort((a,b) => a.saldo - b.saldo);
+                    target = remaining.length > 0 ? remaining[0] : null;
+                }
+
+                if (target && disp2 > 0) {
+                    if (l2Nombres.includes(target.nombre)) {
+                        let p = Math.min(target.saldo - pagosL2[target.nombre], disp2);
+                        pagosL2[target.nombre] += p;
+                        disp2 -= p;
+                    } else {
+                        let p = Math.min(target.saldo, disp2); 
+                        target.saldo -= p;
+                        disp2 -= p;
+                        let estado = target.saldo === 0 ? "¡CERRAR TARJETA!" : (target.saldo <= target.minimo*2 ? "Activa - ¡Casi lista!" : "Activa");
+                        html += `<tr>
+                            <td class="text-nowrap text-center">Mes ${m}</td>
+                            <td class="text-nowrap text-center">Día 15 (Lote 2)</td>
+                            <td class="text-nowrap fw-bold">${target.nombre} (Ataque Nieve Adicional)</td>
+                            <td class="text-nowrap text-center fw-bold">${fmt(p)}</td>
+                            <td class="text-nowrap text-center">${target.saldo === 0 ? '0' : fmt(target.saldo)}</td>
+                            <td class="text-nowrap text-center fw-bold ${target.saldo === 0 ? 'text-success-custom' : (target.saldo <= target.minimo*2 ? 'text-warning-custom' : '')}">${estado}</td>
+                        </tr>`;
+                    }
+                }
+
+                l2Deudas.forEach(d => {
+                    let p = pagosL2[d.nombre];
+                    if (p === 0) return; 
+                    d.saldo -= p;
+                    
+                    let etiqueta = (p > d.minimo) ? "(Ataque Nieve)" : "(Pago Mínimo)";
+                    if (d.saldo === 0 && p <= d.minimo) etiqueta = "(Liquidación Final)";
+                    else if (d.saldo === 0) etiqueta = "(Liquidación Final)";
+
+                    let estado = d.saldo === 0 ? "¡CERRAR TARJETA!" : (d.saldo <= d.minimo*2 ? "Activa - ¡Casi lista!" : "Activa");
+                    
+                    html += `<tr>
+                        <td class="text-nowrap text-center">Mes ${m}</td>
+                        <td class="text-nowrap text-center">Día 15 (Lote 2)</td>
+                        <td class="text-nowrap">${d.nombre} ${etiqueta}</td>
+                        <td class="text-nowrap text-center">${fmt(p)}</td>
+                        <td class="text-nowrap text-center">${d.saldo === 0 ? '0' : fmt(d.saldo)}</td>
+                        <td class="text-nowrap text-center fw-bold ${d.saldo === 0 ? 'text-success-custom' : (d.saldo <= d.minimo*2 ? 'text-warning-custom' : '')}">${estado}</td>
+                    </tr>`;
+                });
+
                 m++;
             }
-            document.getElementById('proyeccionContainer').innerHTML = html + `</tbody></table>`;
+            html += `</tbody></table></div>`;
+            document.getElementById('proyeccionContainer').innerHTML = html;
         }
 
         document.getElementById('formGasto').addEventListener('submit', async (e) => {
