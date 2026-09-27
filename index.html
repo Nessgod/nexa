@@ -267,11 +267,11 @@
             </div>
             <div class="mb-3">
                 <label class="form-label small text-muted">Saldo Total Actual ($)</label>
-                <input type="number" id="deudaSaldo" class="form-control" placeholder="Ej: 1500000">
+                <input type="text" inputmode="numeric" id="deudaSaldo" class="form-control currency-input" placeholder="Ej: 1500000">
             </div>
             <div class="mb-3">
                 <label class="form-label small text-muted">Pago Mínimo Mensual ($)</label>
-                <input type="number" id="deudaMinimo" class="form-control" placeholder="Ej: 45000">
+                <input type="text" inputmode="numeric" id="deudaMinimo" class="form-control currency-input" placeholder="Ej: 45000">
             </div>
           </div>
           <div class="modal-footer border-top-0 pt-0">
@@ -297,7 +297,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label small text-muted">Monto Mensual ($)</label>
-                <input type="number" id="gastoFijoMonto" class="form-control" placeholder="Ej: 45000">
+                <input type="text" inputmode="numeric" id="gastoFijoMonto" class="form-control currency-input" placeholder="Ej: 45000">
             </div>
           </div>
           <div class="modal-footer border-top-0 pt-0">
@@ -422,7 +422,7 @@
                         <input type="text" id="descGasto" class="form-control" placeholder="Ej: Supermercado, bencina..." required>
                     </div>
                     <div class="mb-3">
-                        <input type="number" id="montoGasto" class="form-control" placeholder="Monto ($)" required>
+                        <input type="text" inputmode="numeric" id="montoGasto" class="form-control currency-input" placeholder="Monto ($)" required>
                     </div>
                     <button type="submit" class="btn btn-primary-custom w-100 btn-custom">
                         <span class="material-symbols-rounded">add_circle</span> Registrar Gasto
@@ -457,11 +457,11 @@
             <div class="card p-3 mb-4">
                 <div class="mb-3">
                     <label class="form-label small text-muted mb-1">Ingreso Lote 1 (Día 5)</label>
-                    <input type="number" id="ajusteIngreso1" class="form-control" onchange="guardarIngresos()">
+                    <input type="text" inputmode="numeric" id="ajusteIngreso1" class="form-control currency-input" onchange="guardarIngresos()">
                 </div>
                 <div>
                     <label class="form-label small text-muted mb-1">Ingreso Lote 2 (Día 15)</label>
-                    <input type="number" id="ajusteIngreso2" class="form-control" onchange="guardarIngresos()">
+                    <input type="text" inputmode="numeric" id="ajusteIngreso2" class="form-control currency-input" onchange="guardarIngresos()">
                 </div>
             </div>
 
@@ -550,6 +550,27 @@
         };
 
         const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
+
+        const parseCurrency = (val) => {
+            if(!val) return 0;
+            if(typeof val === 'number') return val;
+            return parseInt(val.toString().replace(/\D/g, '')) || 0;
+        };
+
+        const formatCurrencyInput = (el) => {
+            let val = el.value.replace(/\D/g, '');
+            if (val !== '') {
+                el.value = parseInt(val).toLocaleString('es-CL');
+            } else {
+                el.value = '';
+            }
+        };
+
+        document.addEventListener('input', function (e) {
+            if (e.target.classList.contains('currency-input')) {
+                formatCurrencyInput(e.target);
+            }
+        });
 
         async function boot() {
             const profile = localStorage.getItem('nexa_profile');
@@ -747,8 +768,8 @@
 
         window.renderAjustes = () => {
             // Ingresos
-            document.getElementById('ajusteIngreso1').value = localStorage.getItem('nexa_lote1_ingreso') || 920000;
-            document.getElementById('ajusteIngreso2').value = localStorage.getItem('nexa_lote2_ingreso') || 250000;
+            document.getElementById('ajusteIngreso1').value = parseInt(localStorage.getItem('nexa_lote1_ingreso') || 920000).toLocaleString('es-CL');
+            document.getElementById('ajusteIngreso2').value = parseInt(localStorage.getItem('nexa_lote2_ingreso') || 250000).toLocaleString('es-CL');
             
             // Gastos Fijos
             let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
@@ -787,8 +808,8 @@
         }
 
         window.guardarIngresos = () => {
-            localStorage.setItem('nexa_lote1_ingreso', document.getElementById('ajusteIngreso1').value);
-            localStorage.setItem('nexa_lote2_ingreso', document.getElementById('ajusteIngreso2').value);
+            localStorage.setItem('nexa_lote1_ingreso', parseCurrency(document.getElementById('ajusteIngreso1').value));
+            localStorage.setItem('nexa_lote2_ingreso', parseCurrency(document.getElementById('ajusteIngreso2').value));
             renderNieve(true);
         }
 
@@ -799,7 +820,7 @@
                 let g = fijos[idx];
                 document.getElementById('gastoFijoId').value = idx;
                 document.getElementById('gastoFijoNombre').value = g.nombre;
-                document.getElementById('gastoFijoMonto').value = g.monto;
+                document.getElementById('gastoFijoMonto').value = (g.monto || 0).toLocaleString('es-CL');
                 document.getElementById('modalGastoFijoTitle').textContent = 'Editar Gasto Fijo';
             } else {
                 document.getElementById('gastoFijoId').value = '';
@@ -816,7 +837,7 @@
             let idx = document.getElementById('gastoFijoId').value;
             let obj = {
                 nombre: document.getElementById('gastoFijoNombre').value,
-                monto: parseFloat(document.getElementById('gastoFijoMonto').value) || 0,
+                monto: parseCurrency(document.getElementById('gastoFijoMonto').value) || 0,
                 icon: 'home'
             };
             
@@ -844,8 +865,8 @@
                 let d = state.deudas.find(x => x.id === id);
                 document.getElementById('deudaId').value = d.id;
                 document.getElementById('deudaNombre').value = d.nombre;
-                document.getElementById('deudaSaldo').value = d.saldo;
-                document.getElementById('deudaMinimo').value = d.minimo;
+                document.getElementById('deudaSaldo').value = (d.saldo || 0).toLocaleString('es-CL');
+                document.getElementById('deudaMinimo').value = (d.minimo || 0).toLocaleString('es-CL');
                 document.getElementById('deudaOwner').value = d.owner || 'Hogar';
                 document.getElementById('deudaLote').value = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? '1' : '2');
                 document.getElementById('modalDeudaTitle').textContent = 'Editar Tarjeta';
@@ -871,8 +892,8 @@
             const obj = {
                 user_id: currentUser.id,
                 nombre: document.getElementById('deudaNombre').value,
-                saldo: parseFloat(document.getElementById('deudaSaldo').value) || 0,
-                minimo: parseFloat(document.getElementById('deudaMinimo').value) || 0,
+                saldo: parseCurrency(document.getElementById('deudaSaldo').value) || 0,
+                minimo: parseCurrency(document.getElementById('deudaMinimo').value) || 0,
                 owner: document.getElementById('deudaOwner').value,
                 lote: parseInt(document.getElementById('deudaLote').value)
             };
@@ -917,14 +938,14 @@
 
         window.recalcularLote1 = () => {
             if(pendingLoteType !== 1) return;
-            const ingB = parseFloat(document.getElementById('lote1IngresoB').value) || 0;
-            const ingK = parseFloat(document.getElementById('lote1IngresoK').value) || 0;
+            const ingB = parseCurrency(document.getElementById('lote1IngresoB').value) || 0;
+            const ingK = parseCurrency(document.getElementById('lote1IngresoK').value) || 0;
             const ing = ingB + ingK;
             
             let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
             let totalFijos = 0;
             document.querySelectorAll('.gasto-base-input').forEach(el => {
-                let v = parseFloat(el.value) || 0;
+                let v = parseCurrency(el.value) || 0;
                 fijos[el.dataset.idx].monto = v;
                 // Sumar solo si el checkbox está marcado
                 const chk = document.getElementById('chkFijo_' + el.dataset.idx);
@@ -982,14 +1003,14 @@
                         <span>Sueldo Bryan</span>
                         <div class="input-group input-group-sm" style="width: 140px;">
                             <span class="input-group-text bg-transparent text-muted border-end-0">$</span>
-                            <input type="number" id="lote1IngresoB" class="form-control border-start-0 text-end fw-bold px-1" value="${ingB}" oninput="recalcularLote1()">
+                            <input type="text" inputmode="numeric" id="lote1IngresoB" class="form-control border-start-0 text-end fw-bold px-1 currency-input" value="${ingB}" oninput="recalcularLote1()">
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <span>Sueldo Katia</span>
                         <div class="input-group input-group-sm" style="width: 140px;">
                             <span class="input-group-text bg-transparent text-muted border-end-0">$</span>
-                            <input type="number" id="lote1IngresoK" class="form-control border-start-0 text-end fw-bold px-1" value="${ingK}" oninput="recalcularLote1()">
+                            <input type="text" inputmode="numeric" id="lote1IngresoK" class="form-control border-start-0 text-end fw-bold px-1 currency-input" value="${ingK}" oninput="recalcularLote1()">
                         </div>
                     </div>
                 </div>
@@ -1006,7 +1027,7 @@
                         </label>
                         <div class="input-group input-group-sm" style="width: 130px;">
                             <span class="input-group-text bg-transparent text-danger-custom border-end-0" style="border-color: rgba(220, 38, 38, 0.3);">$</span>
-                            <input type="number" data-idx="${idx}" class="form-control border-start-0 text-end fw-bold text-danger-custom px-1 gasto-base-input" style="border-color: rgba(220, 38, 38, 0.3);" value="${g.monto}" oninput="recalcularLote1()">
+                            <input type="text" inputmode="numeric" data-idx="${idx}" class="form-control border-start-0 text-end fw-bold text-danger-custom px-1 gasto-base-input currency-input" style="border-color: rgba(220, 38, 38, 0.3);" value="${g.monto}" oninput="recalcularLote1()">
                         </div>
                     </div>`;
             });
@@ -1521,7 +1542,7 @@
             const rawDesc = document.getElementById('descGasto').value;
             const profile = localStorage.getItem('nexa_profile') || 'Hogar';
             const desc = `[${profile}] ${rawDesc}`;
-            const monto = parseFloat(document.getElementById('montoGasto').value);
+            const monto = parseCurrency(document.getElementById('montoGasto').value);
             
             const { data, error } = await supabase.from('Finanzas_Movimientos').insert([{ user_id: currentUser.id, descripcion: desc, monto: monto }]).select().single();
             if(data) {
