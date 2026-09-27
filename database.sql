@@ -1,48 +1,38 @@
--- 1. Habilitar extensión para UUIDs
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- SISTEMA OPERATIVO FINANCIERO (BOLA DE NIEVE)
 
--- 2. Crear tabla de Grupos para vincular parejas/equipos (Compartido)
-CREATE TABLE Grupos (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- 3. Tabla de miembros del grupo
-CREATE TABLE Grupo_Miembros (
-    grupo_id UUID REFERENCES Grupos(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    PRIMARY KEY (grupo_id, user_id)
-);
-
--- 4. Tabla Gastos (Personal y Compartido)
--- Si grupo_id es NULL, el gasto es personal.
-CREATE TABLE Gastos (
+-- 1. Tabla de Deudas
+CREATE TABLE Finanzas_Deudas (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) NOT NULL,
-    grupo_id UUID REFERENCES Grupos(id) ON DELETE CASCADE,
+    nombre TEXT NOT NULL,
+    saldo NUMERIC NOT NULL,
+    minimo NUMERIC NOT NULL
+);
+
+-- 2. Tabla del Ciclo (Estado de la bola de nieve)
+CREATE TABLE Finanzas_Ciclo (
+    user_id UUID REFERENCES auth.users(id) PRIMARY KEY,
+    mes INTEGER DEFAULT 1,
+    fase INTEGER DEFAULT 0,
+    pozo NUMERIC DEFAULT 0
+);
+
+-- 3. Tabla de Gastos e Ingresos Extra (Movimientos)
+CREATE TABLE Finanzas_Movimientos (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) NOT NULL,
     descripcion TEXT NOT NULL,
     monto NUMERIC NOT NULL,
+    tipo TEXT DEFAULT 'gasto', -- 'gasto' o 'ingreso'
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. Tabla Tareas
--- Si grupo_id es NULL, la tarea es personal.
-CREATE TABLE Tareas (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) NOT NULL,
-    grupo_id UUID REFERENCES Grupos(id) ON DELETE CASCADE,
-    descripcion TEXT NOT NULL,
-    completada BOOLEAN DEFAULT FALSE,
-    creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- Permisos RLS (Row Level Security) - Habilitados para seguridad
+ALTER TABLE Finanzas_Deudas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Finanzas_Ciclo ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Finanzas_Movimientos ENABLE ROW LEVEL SECURITY;
 
--- 6. Habilitar Realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE Grupos;
-ALTER PUBLICATION supabase_realtime ADD TABLE Grupo_Miembros;
-ALTER PUBLICATION supabase_realtime ADD TABLE Gastos;
-ALTER PUBLICATION supabase_realtime ADD TABLE Tareas;
-
--- Políticas de Seguridad (RLS) opcionales para producción
--- ALTER TABLE Gastos ENABLE ROW LEVEL SECURITY;
--- (Aquí se configurarían las políticas para asegurar que cada usuario solo vea sus datos o los de su grupo)
+-- Políticas para que cada usuario vea solo sus datos
+CREATE POLICY "Usuarios ven sus propias deudas" ON Finanzas_Deudas FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios ven su propio ciclo" ON Finanzas_Ciclo FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios ven sus propios movimientos" ON Finanzas_Movimientos FOR ALL USING (auth.uid() = user_id);

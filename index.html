@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Plan Bola de Nieve</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Nexa OS</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,195 +11,421 @@
     <link rel="manifest" href="/manifest.json">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Material Symbols Rounded for a modern, friendly native app look -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
     
     <style>
         :root {
-            --bg-base: #13131A;
-            --bg-card: #1C1C24;
-            --text-main: #FFFFFF;
-            --text-muted: #8E8E9F;
+            --bg-base: #0B0E14;
+            --bg-card: #151A24;
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
             --accent-blue: #3B82F6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.15);
             --accent-green: #10B981;
+            --accent-green-dim: rgba(16, 185, 129, 0.15);
             --accent-red: #EF4444;
-            --border-color: #2D2D3A;
+            --accent-red-dim: rgba(239, 68, 68, 0.15);
+            --border-color: #1F2937;
+            --app-max-width: 500px;
         }
+        
         body { 
             background-color: var(--bg-base); 
             color: var(--text-main); 
             font-family: 'Inter', system-ui, -apple-system, sans-serif; 
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px; /* Space for bottom nav */
+            padding-top: env(safe-area-inset-top);
         }
-        .app-container { max-width: 600px; margin: 0 auto; padding-bottom: 5rem; }
+
+        .material-symbols-rounded {
+            vertical-align: middle;
+            font-size: 24px;
+        }
+
+        .app-container { max-width: var(--app-max-width); margin: 0 auto; }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5 { font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0; }
+        
+        /* Modern Cards */
         .card { 
             background-color: var(--bg-card); 
             border: 1px solid var(--border-color); 
-            border-radius: 16px; 
-            margin-bottom: 20px;
+            border-radius: 20px; 
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-        .card-header {
-            background-color: rgba(255,255,255,0.02);
+        
+        /* Header / Balance Area */
+        .balance-header {
+            padding: 30px 20px;
+            background: linear-gradient(145deg, #1C2331 0%, #151A24 100%);
             border-bottom: 1px solid var(--border-color);
-            border-top-left-radius: 16px !important;
-            border-top-right-radius: 16px !important;
-            font-weight: 600; padding: 1rem 1.25rem;
+            text-align: center;
         }
-        .text-accent { color: var(--accent-blue) !important; }
-        .text-success-custom { color: var(--accent-green) !important; }
-        .text-danger-custom { color: var(--accent-red) !important; }
-        
-        .btn-custom { font-weight: 600; padding: 14px; border-radius: 12px; border: none; }
-        .btn-primary-custom { background-color: var(--accent-blue); color: white; }
-        .btn-success-custom { background-color: var(--accent-green); color: white; }
-        
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: -webkit-linear-gradient(45deg, #10B981, #34D399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+
+        /* Lists */
         .debt-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+            padding: 18px 20px; border-bottom: 1px solid var(--border-color);
+            background-color: transparent;
+            transition: background-color 0.2s;
         }
         .debt-item:last-child { border-bottom: none; }
-        .debt-name { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
-        .debt-min { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
-        .debt-balance { font-size: 1.15rem; font-weight: 700; }
+        .debt-item:active { background-color: rgba(255,255,255,0.02); }
         
-        /* Nav Bottom */
+        .debt-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            background-color: #1F2937;
+            margin-right: 15px;
+            color: var(--text-main);
+        }
+        
+        /* Buttons */
+        .btn-custom { 
+            font-weight: 600; padding: 16px; border-radius: 16px; border: none; 
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .btn-custom:active { transform: scale(0.96); }
+        .btn-custom:disabled { opacity: 0.4; transform: none; }
+        .btn-primary-custom { background-color: var(--accent-blue); color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .btn-success-custom { background-color: var(--accent-green); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        .btn-danger-icon { 
+            background: var(--accent-red-dim); color: var(--accent-red); 
+            border: none; border-radius: 10px; padding: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
-            background-color: var(--bg-card); border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-around; padding: 10px 0;
+            background-color: rgba(21, 26, 36, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; 
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
             z-index: 1000;
         }
-        .nav-item {
-            text-align: center; color: var(--text-muted); cursor: pointer; flex: 1; font-size: 0.9rem;
+        .nav-item { 
+            text-align: center; color: var(--text-muted); cursor: pointer; flex: 1; 
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            font-size: 0.75rem; font-weight: 500;
+            transition: color 0.2s;
         }
-        .nav-item.active { color: var(--accent-blue); font-weight: bold; }
+        .nav-item.active { color: var(--accent-blue); }
+        .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; color: var(--accent-blue); }
         
         .d-none { display: none !important; }
-        .table-dark { background-color: transparent; color: var(--text-main); }
-        .table-dark th { border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: normal; }
-        .table-dark td { border-bottom: 1px solid var(--border-color); padding: 12px 5px; font-size: 0.9rem; }
-        .table-dark tr:last-child td { border-bottom: none; }
         
-        /* Form inputs for expenses */
-        .form-control { background-color: #13131A; border: 1px solid var(--border-color); color: white; }
-        .form-control:focus { background-color: #13131A; color: white; border-color: var(--accent-blue); box-shadow: none; }
+        /* Forms */
+        .form-control { 
+            background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); 
+            color: white; padding: 16px; border-radius: 14px; font-size: 1rem;
+        }
+        .form-control:focus { 
+            background-color: rgba(255,255,255,0.05); color: white; 
+            border-color: var(--accent-blue); box-shadow: 0 0 0 4px var(--accent-blue-dim); 
+        }
+        
+        /* Tables */
+        .table-dark { background-color: transparent; color: var(--text-main); margin-bottom: 0; }
+        .table-dark th { border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 10px; }
+        .table-dark td { border-bottom: 1px solid var(--border-color); padding: 16px 10px; font-size: 0.95rem; vertical-align: middle; }
+        .table-dark tr:last-child td { border-bottom: none; }
+
+        /* Loader */
+        #loader { position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .spinner-border { width: 3rem; height: 3rem; color: var(--accent-blue); border-width: 4px; }
+        
+        /* Top Bar */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px;
+        }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background-color: var(--accent-blue-dim); color: var(--accent-blue);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container app-container pt-4">
-        
-        <!-- VISTA 1: BOLA DE NIEVE -->
-        <div id="view-nieve">
-            <div class="text-center mb-4">
-                <h2 class="fw-bold mb-1">Bola de Nieve</h2>
-                <div class="badge bg-secondary bg-opacity-25 text-light px-3 py-2 rounded-pill mt-2" id="mesActualBadge">Mes Actual: 1</div>
-            </div>
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="spinner-border mb-4" role="status"></div>
+        <h4 class="fw-bold">Nexa OS</h4>
+        <p class="text-muted small">Sincronizando finanzas...</p>
+    </div>
 
+    <!-- PANTALLA DE AUTENTICACIÓN -->
+    <div id="auth-section" class="container app-container pt-5 d-none">
+        <div class="text-center mb-5 mt-4">
+            <span class="material-symbols-rounded text-accent" style="font-size: 64px;">account_balance</span>
+            <h1 class="fw-bold text-main mt-3">Nexa OS</h1>
+            <p class="text-muted">Tu sistema operativo financiero.</p>
+        </div>
+        <div class="card p-4 mx-2">
+            <form id="authForm">
+                <input type="email" id="authEmail" class="form-control mb-3" placeholder="Correo electrónico" required>
+                <input type="password" id="authPass" class="form-control mb-4" placeholder="Contraseña" required>
+                <button type="submit" class="btn btn-primary-custom w-100 btn-custom mb-3">
+                    <span class="material-symbols-rounded">login</span> Iniciar Sesión / Crear Cuenta
+                </button>
+                <div id="authError" class="text-center text-danger-custom small"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="app-section" class="container app-container d-none">
+        
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div>
+                <h4 class="mb-0">Hola, <span id="userName" class="text-accent">Usuario</span></h4>
+                <small class="text-muted">Tu resumen financiero</small>
+            </div>
+            <div class="user-avatar" onclick="logout()" style="cursor: pointer;" title="Cerrar sesión">
+                <span class="material-symbols-rounded">logout</span>
+            </div>
+        </div>
+
+        <!-- VISTA 1: BOLA DE NIEVE -->
+        <div id="view-nieve" class="px-2">
+            
+            <!-- Hero Card -->
             <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Flujo de Caja (Pozo)</span>
-                    <span id="pozoActual" class="text-success-custom fs-4 fw-bold">$0</span>
+                <div class="balance-header">
+                    <p class="text-muted small text-uppercase fw-bold mb-1">Caja Disponible (Pozo)</p>
+                    <div id="pozoActual" class="balance-amount">$0</div>
+                    <div class="d-inline-flex align-items-center bg-dark rounded-pill px-3 py-1 mt-2 border" style="border-color: #374151 !important;">
+                        <span class="material-symbols-rounded fs-6 me-2 text-warning">calendar_month</span>
+                        <span class="small fw-semibold">Mes de Simulación: <span id="mesBadge" class="text-white">1</span></span>
+                    </div>
                 </div>
-                <div class="card-body text-center py-4">
-                    <p class="mb-2 small text-muted text-uppercase fw-bold">Estado del ciclo</p>
-                    <h4 id="estadoCiclo" class="text-accent fw-bold mb-0">Esperando Lote 1</h4>
+                <div class="card-body text-center py-4 bg-dark bg-opacity-25">
+                    <p class="mb-1 small text-muted text-uppercase fw-bold">Estado Actual</p>
+                    <h5 id="estadoCiclo" class="text-accent mb-0">Esperando Lote 1</h5>
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-6">
                     <button id="btnLote1" class="btn btn-primary-custom w-100 btn-custom" onclick="ejecutarLote1()">
-                        Lote 1 <br><small class="fw-normal opacity-75">(Día 5)</small>
+                        <span class="material-symbols-rounded">play_arrow</span> Lote 1
                     </button>
                 </div>
                 <div class="col-6">
                     <button id="btnLote2" class="btn btn-success-custom w-100 btn-custom" onclick="ejecutarLote2()" disabled>
-                        Lote 2 <br><small class="fw-normal opacity-75">(Ataque)</small>
+                        <span class="material-symbols-rounded">bolt</span> Lote 2
                     </button>
                 </div>
             </div>
 
-            <h5 class="fw-bold mb-3 px-1">Estado de Tarjetas</h5>
+            <h5 class="fw-bold mb-3 px-2 mt-2">Tarjetas Activas</h5>
             <div class="card" id="listaDeudas"></div>
-            
-            <div class="text-center mt-4">
-                <button class="btn btn-sm btn-outline-danger px-4 rounded-pill" onclick="reiniciarPlan()">Reiniciar Progreso</button>
-            </div>
         </div>
 
         <!-- VISTA 2: PROYECCIÓN -->
-        <div id="view-plan" class="d-none">
-            <h3 class="fw-bold mb-4 text-center">Plan Proyectado</h3>
-            <p class="text-muted text-center small mb-4">Simulación automática basada en tus saldos actuales hasta liquidar todas las deudas.</p>
-            <div class="card p-2" style="overflow-x: auto;">
+        <div id="view-plan" class="d-none px-2">
+            <div class="text-center mb-4 mt-2">
+                <span class="material-symbols-rounded text-accent mb-2" style="font-size: 48px;">timeline</span>
+                <h3 class="fw-bold mb-2">Simulador de Nieve</h3>
+                <p class="text-muted small">Cálculo automático hasta alcanzar Deuda $0 basado en tus saldos actuales.</p>
+            </div>
+            
+            <div class="card" style="overflow-x: auto;">
                 <div id="proyeccionContainer"></div>
             </div>
         </div>
 
-        <!-- VISTA 3: OTROS GASTOS -->
-        <div id="view-gastos" class="d-none">
-            <h3 class="fw-bold mb-4 text-center">Otros Gastos</h3>
+        <!-- VISTA 3: GASTOS (MOVIMIENTOS) -->
+        <div id="view-gastos" class="d-none px-2">
+            <div class="text-center mb-4 mt-2">
+                <span class="material-symbols-rounded text-success-custom mb-2" style="font-size: 48px;">receipt_long</span>
+                <h3 class="fw-bold mb-2">Otros Gastos</h3>
+                <p class="text-muted small">Monitorea tus gastos del día a día para no salirte del presupuesto.</p>
+            </div>
             
             <div class="card p-3 mb-4">
                 <form id="formGasto">
-                    <div class="mb-2">
-                        <input type="text" id="descGasto" class="form-control" placeholder="Ej: Supermercado, Farmacia..." required>
+                    <div class="mb-3">
+                        <input type="text" id="descGasto" class="form-control" placeholder="Ej: Supermercado, bencina..." required>
                     </div>
                     <div class="mb-3">
                         <input type="number" id="montoGasto" class="form-control" placeholder="Monto ($)" required>
                     </div>
-                    <button type="submit" class="btn btn-primary-custom w-100 btn-custom py-2">Registrar Gasto</button>
+                    <button type="submit" class="btn btn-primary-custom w-100 btn-custom">
+                        <span class="material-symbols-rounded">add_circle</span> Registrar Gasto
+                    </button>
                 </form>
             </div>
 
-            <h5 class="fw-bold mb-3 px-1 d-flex justify-content-between">
-                <span>Historial</span>
-                <span id="totalGastosExtra" class="text-danger-custom">$0</span>
-            </h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 px-2 mt-4">
+                <h5 class="fw-bold mb-0">Historial Reciente</h5>
+                <h5 id="totalGastosExtra" class="text-danger-custom fw-bold mb-0">$0</h5>
+            </div>
             <div class="card" id="listaGastosExtra"></div>
         </div>
-
+        
     </div>
 
     <!-- BOTTOM NAV -->
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('nieve', this)">🎯 Nieve</div>
-        <div class="nav-item" onclick="switchTab('plan', this)">📅 Plan</div>
-        <div class="nav-item" onclick="switchTab('gastos', this)">🛒 Gastos</div>
+    <div id="bottom-nav" class="bottom-nav d-none">
+        <div class="nav-item active" onclick="switchTab('nieve', this)">
+            <span class="material-symbols-rounded">snowing</span>
+            Nieve
+        </div>
+        <div class="nav-item" onclick="switchTab('plan', this)">
+            <span class="material-symbols-rounded">event_note</span>
+            Plan
+        </div>
+        <div class="nav-item" onclick="switchTab('gastos', this)">
+            <span class="material-symbols-rounded">wallet</span>
+            Gastos
+        </div>
     </div>
 
-    <script>
-        // CONFIGURACIÓN INICIAL
-        const DEUDAS_INICIALES = [
-            { id: 'tricot', nombre: 'Tricot', saldo: 164886, minimo: 30000 },
-            { id: 'santander', nombre: 'Santander', saldo: 506857, minimo: 40000 },
-            { id: 'itau', nombre: 'Itaú', saldo: 613152, minimo: 55000 },
-            { id: 'lider', nombre: 'Lider', saldo: 960000, minimo: 113000 },
-            { id: 'falabella', nombre: 'Falabella', saldo: 1141200, minimo: 162000 },
-            { id: 'cencosud', nombre: 'Cencosud', saldo: 1195320, minimo: 85000 }
-        ];
+    <!-- LÓGICA DE NEGOCIO Y SUPABASE -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.33.1/+esm'
 
+        const supabaseUrl = 'https://wwtgrwbvjpgafffborys.supabase.co';
+        const supabaseKey = 'sb_publishable_3TXgd6XMMJYUTf53hAz_DA_O6pYlxm5';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+        
         let state = {
-            mes: 1, fase: 0, pozo: 0,
-            deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES)),
-            gastosExtra: []
+            ciclo: { mes: 1, fase: 0, pozo: 0 },
+            deudas: [],
+            movimientos: []
         };
 
-        function init() {
-            const saved = localStorage.getItem('snowballData');
-            if (saved) state = JSON.parse(saved);
-            if (!state.gastosExtra) state.gastosExtra = [];
+        const DEUDAS_BASE = [
+            { nombre: 'Tricot', saldo: 164886, minimo: 30000, icon: 'credit_card' },
+            { nombre: 'Santander', saldo: 506857, minimo: 40000, icon: 'account_balance' },
+            { nombre: 'Itaú', saldo: 613152, minimo: 55000, icon: 'account_balance' },
+            { nombre: 'Lider', saldo: 960000, minimo: 113000, icon: 'shopping_cart' },
+            { nombre: 'Falabella', saldo: 1141200, minimo: 162000, icon: 'shopping_bag' },
+            { nombre: 'Cencosud', saldo: 1195320, minimo: 85000, icon: 'storefront' }
+        ];
+        
+        // Helper to match icons
+        const getIconForDebt = (nombre) => {
+            const base = DEUDAS_BASE.find(d => d.nombre === nombre);
+            return base ? base.icon : 'credit_card';
+        };
+
+        async function boot() {
+            const { data: { session } } = await supabase.auth.getSession();
+            document.getElementById('loader').classList.add('d-none');
+            
+            if (session) {
+                currentUser = session.user;
+                showApp();
+            } else {
+                showAuth();
+            }
+
+            supabase.auth.onAuthStateChange((_e, session) => {
+                if (session) { currentUser = session.user; showApp(); } 
+                else { currentUser = null; showAuth(); }
+            });
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPass').value;
+            const err = document.getElementById('authError');
+            
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Cargando...';
+            btn.disabled = true;
+            
+            let { error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error && error.message.includes("Invalid login")) {
+                const { error: regErr } = await supabase.auth.signUp({ email, password });
+                if (regErr) err.textContent = regErr.message;
+                else err.innerHTML = "<span class='text-success-custom'>Cuenta creada. Cargando...</span>";
+            } else if (error) {
+                err.textContent = error.message;
+            }
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+
+        window.logout = async () => { await supabase.auth.signOut(); }
+
+        function showAuth() {
+            document.getElementById('auth-section').classList.remove('d-none');
+            document.getElementById('app-section').classList.add('d-none');
+            document.getElementById('bottom-nav').classList.add('d-none');
+        }
+
+        async function showApp() {
+            document.getElementById('auth-section').classList.add('d-none');
+            document.getElementById('app-section').classList.remove('d-none');
+            document.getElementById('bottom-nav').classList.remove('d-none');
+            
+            // Set User Name (part before @)
+            const name = currentUser.email.split('@')[0];
+            document.getElementById('userName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            
+            await loadData();
+        }
+
+        async function loadData() {
+            // Ciclo
+            let { data: ciclo } = await supabase.from('Finanzas_Ciclo').select('*').eq('user_id', currentUser.id).single();
+            if (!ciclo) {
+                const { data: newCiclo } = await supabase.from('Finanzas_Ciclo').insert([{ user_id: currentUser.id }]).select().single();
+                state.ciclo = newCiclo || { mes: 1, fase: 0, pozo: 0 };
+            } else { state.ciclo = ciclo; }
+
+            // Deudas
+            let { data: deudas } = await supabase.from('Finanzas_Deudas').select('*').eq('user_id', currentUser.id).order('saldo', { ascending: true });
+            if (!deudas || deudas.length === 0) {
+                const insertDeudas = DEUDAS_BASE.map(({nombre, saldo, minimo}) => ({ nombre, saldo, minimo, user_id: currentUser.id }));
+                await supabase.from('Finanzas_Deudas').insert(insertDeudas);
+                let { data: nuevas } = await supabase.from('Finanzas_Deudas').select('*').eq('user_id', currentUser.id).order('saldo', { ascending: true });
+                state.deudas = nuevas || [];
+            } else { state.deudas = deudas; }
+
+            // Movimientos
+            let { data: movs } = await supabase.from('Finanzas_Movimientos').select('*').eq('user_id', currentUser.id).order('creado_en', { ascending: false });
+            state.movimientos = movs || [];
+
             renderNieve();
             renderGastos();
         }
 
-        function saveState() {
-            localStorage.setItem('snowballData', JSON.stringify(state));
-            renderNieve();
-            renderGastos();
-        }
-
-        // TABS LOGIC
-        function switchTab(tab, el) {
+        window.switchTab = (tab, el) => {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
             
@@ -208,171 +434,215 @@
             document.getElementById('view-gastos').classList.add('d-none');
             
             document.getElementById('view-' + tab).classList.remove('d-none');
-
+            window.scrollTo(0, 0);
             if(tab === 'plan') renderPlanProyectado();
         }
 
-        // VISTA: BOLA DE NIEVE
-        function ejecutarLote1() {
-            if (state.fase !== 0) return;
+        window.ejecutarLote1 = async () => {
+            if (state.ciclo.fase !== 0) return;
+            const btn = document.getElementById('btnLote1');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+            btn.disabled = true;
+            
             let disp = 920000 - 584000;
-            ['falabella', 'cencosud', 'itau'].forEach(id => {
-                let d = state.deudas.find(x => x.id === id);
+            let updates = [];
+            ['Falabella', 'Cencosud', 'Itaú'].forEach(nombre => {
+                let d = state.deudas.find(x => x.nombre === nombre);
                 if (d && d.saldo > 0) {
                     let pago = Math.min(d.saldo, d.minimo);
                     disp -= pago; d.saldo -= pago;
+                    updates.push(d);
                 }
             });
-            state.pozo = disp; state.fase = 1; saveState();
+            
+            state.ciclo.pozo = disp; state.ciclo.fase = 1; 
+            await Promise.all(updates.map(u => supabase.from('Finanzas_Deudas').update({ saldo: u.saldo }).eq('id', u.id)));
+            await supabase.from('Finanzas_Ciclo').update({ pozo: disp, fase: 1 }).eq('user_id', currentUser.id);
+            
+            renderNieve();
         }
 
-        function ejecutarLote2() {
-            if (state.fase !== 1) return;
-            let disp = 250000 + state.pozo;
-            
-            // Lote 2 IDs según la regla original
-            let lote2Ids = ['lider', 'santander', 'tricot'];
-            let activas = state.deudas.filter(d => lote2Ids.includes(d.id) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
+        window.ejecutarLote2 = async () => {
+            if (state.ciclo.fase !== 1) return;
+            const btn = document.getElementById('btnLote2');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+            btn.disabled = true;
+
+            let disp = 250000 + Number(state.ciclo.pozo);
+            let updates = [];
+            let lote2Nombres = ['Lider', 'Santander', 'Tricot'];
+            let activas = state.deudas.filter(d => lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
             
             if (activas.length === 0) {
-                // Si Lote 2 ya se pagó, el ataque va al Lote 1
-                activas = state.deudas.filter(d => !lote2Ids.includes(d.id) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
+                activas = state.deudas.filter(d => !lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
             }
 
             if (activas.length > 0) {
-                // Pagar mínimos de todas excepto el objetivo (la menor)
                 for (let i = 1; i < activas.length; i++) {
                     let pago = Math.min(activas[i].saldo, activas[i].minimo);
                     disp -= pago; activas[i].saldo -= pago;
+                    updates.push(activas[i]);
                 }
-                // Atacar con TODO el sobrante a la menor
                 let objetivo = activas[0];
                 let ataque = Math.min(objetivo.saldo, disp);
                 disp -= ataque; objetivo.saldo -= ataque;
+                updates.push(objetivo);
                 
-                // Si sobra plata, derrama a la siguiente
                 let idx = 1;
                 while(disp > 0 && idx < activas.length) {
                     let sig = activas[idx];
                     let spill = Math.min(sig.saldo, disp);
                     disp -= spill; sig.saldo -= spill;
+                    if(!updates.includes(sig)) updates.push(sig);
                     idx++;
                 }
             }
 
-            state.pozo = 0; state.fase = 0; state.mes += 1; saveState();
+            state.ciclo.pozo = 0; state.ciclo.fase = 0; state.ciclo.mes += 1; 
+            await Promise.all(updates.map(u => supabase.from('Finanzas_Deudas').update({ saldo: u.saldo }).eq('id', u.id)));
+            await supabase.from('Finanzas_Ciclo').update({ pozo: 0, fase: 0, mes: state.ciclo.mes }).eq('user_id', currentUser.id);
+            
+            renderNieve();
         }
 
-        function reiniciarPlan() {
-            if(confirm("¿Reiniciar progreso?")) {
-                localStorage.removeItem('snowballData');
-                state = { mes: 1, fase: 0, pozo: 0, deudas: JSON.parse(JSON.stringify(DEUDAS_INICIALES)), gastosExtra: [] };
-                saveState();
-            }
-        }
-
-        function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
+        const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
 
         function renderNieve() {
-            document.getElementById('mesActualBadge').textContent = `Mes Actual: ${state.mes}`;
-            document.getElementById('pozoActual').textContent = fmt(state.pozo);
+            document.getElementById('mesBadge').textContent = state.ciclo.mes;
+            document.getElementById('pozoActual').textContent = fmt(state.ciclo.pozo);
             
             const b1 = document.getElementById('btnLote1'), b2 = document.getElementById('btnLote2'), ec = document.getElementById('estadoCiclo');
-            if (state.fase === 0) {
-                b1.disabled = false; b2.disabled = true; ec.textContent = "Esperando Lote 1 (Día 5)"; ec.className = "text-accent mb-0";
+            if (state.ciclo.fase === 0) {
+                b1.disabled = false; b1.innerHTML = '<span class="material-symbols-rounded">play_arrow</span> Lote 1';
+                b2.disabled = true; b2.innerHTML = '<span class="material-symbols-rounded">bolt</span> Lote 2';
+                ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1 text-accent'>hourglass_empty</span> Esperando Lote 1"; 
+                ec.className = "text-accent mb-0 fw-bold";
             } else {
-                b1.disabled = true; b2.disabled = false; ec.textContent = "Esperando Lote 2 (Ataque)"; ec.className = "text-warning mb-0";
+                b1.disabled = true; b1.innerHTML = '<span class="material-symbols-rounded">check</span> Lote 1 (Listo)';
+                b2.disabled = false; b2.innerHTML = '<span class="material-symbols-rounded">bolt</span> Lote 2';
+                ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1 text-warning'>target</span> Esperando Lote 2"; 
+                ec.className = "text-warning mb-0 fw-bold";
             }
 
             let html = '', pagadas = true;
             [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
                 if(d.saldo > 0) pagadas = false;
+                const isPaid = d.saldo === 0;
+                const iconName = getIconForDebt(d.nombre);
                 html += `
-                <div class="debt-item" style="${d.saldo === 0 ? 'opacity: 0.4;' : ''}">
-                    <div>
-                        <div class="debt-name" style="${d.saldo === 0 ? 'text-decoration: line-through;' : ''}">${d.nombre}</div>
-                        <div class="debt-min">Mín: ${fmt(d.minimo)}</div>
+                <div class="debt-item" style="${isPaid ? 'opacity: 0.3;' : ''}">
+                    <div class="d-flex align-items-center">
+                        <div class="debt-icon ${isPaid ? 'bg-success bg-opacity-10 text-success' : ''}">
+                            <span class="material-symbols-rounded">${isPaid ? 'check_circle' : iconName}</span>
+                        </div>
+                        <div>
+                            <div style="font-size:1.1rem; font-weight:600; color:var(--text-main); ${isPaid ? 'text-decoration: line-through;' : ''}">${d.nombre}</div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Mín: ${fmt(d.minimo)}</div>
+                        </div>
                     </div>
                     <div class="text-end">
-                        <div class="debt-balance text-${d.saldo === 0 ? 'success-custom' : 'danger-custom'}">${fmt(d.saldo)}</div>
+                        <div style="font-size:1.15rem; font-weight:700;" class="text-${isPaid ? 'success-custom' : 'danger-custom'}">${fmt(d.saldo)}</div>
                     </div>
                 </div>`;
             });
             document.getElementById('listaDeudas').innerHTML = html;
-            if(pagadas) { ec.textContent = "¡LIBRE DE DEUDAS!"; ec.className = "text-success-custom fw-bold mb-0"; b1.disabled = b2.disabled = true; }
+            if(pagadas) { ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1'>celebration</span> ¡LIBRE DE DEUDAS!"; ec.className = "text-success-custom fw-bold mb-0"; b1.disabled = b2.disabled = true; }
         }
 
-        // VISTA: PROYECCIÓN
         function renderPlanProyectado() {
             let s = JSON.parse(JSON.stringify(state.deudas));
-            let m = state.mes, maxM = m + 40;
-            let html = `<table class="table table-dark table-borderless mb-0"><thead><tr><th>Mes</th><th>Tarjeta</th><th>Pago</th><th>Restante</th></tr></thead><tbody>`;
+            let m = state.ciclo.mes, maxM = m + 40;
+            let html = `<table class="table table-dark table-borderless mb-0">
+                <thead><tr>
+                    <th>Mes</th><th>Tarjeta</th><th>Pago</th><th>Restante</th>
+                </tr></thead><tbody>`;
             
             while(s.some(x => x.saldo > 0) && m < maxM) {
                 let disp1 = 336000;
-                ['falabella','cencosud','itau'].forEach(id => {
-                    let d = s.find(x=>x.id===id);
-                    if(d && d.saldo > 0){ let p = Math.min(d.saldo, d.minimo); disp1 -= p; d.saldo -= p; html += `<tr><td>${m}</td><td>${d.nombre}</td><td><span class="text-muted">Min</span> ${fmt(p)}</td><td>${fmt(d.saldo)}</td></tr>`; }
+                ['Falabella','Cencosud','Itaú'].forEach(nombre => {
+                    let d = s.find(x=>x.nombre===nombre);
+                    if(d && d.saldo > 0){ 
+                        let p = Math.min(d.saldo, d.minimo); disp1 -= p; d.saldo -= p; 
+                        html += `<tr><td>${m}</td><td class="fw-medium">${d.nombre}</td><td><span class="text-muted small">Min</span> ${fmt(p)}</td><td class="fw-bold">${fmt(d.saldo)}</td></tr>`; 
+                    }
                 });
                 
                 let disp2 = 250000 + disp1;
-                let l2Ids = ['lider','santander','tricot'];
-                let act = s.filter(x=>l2Ids.includes(x.id) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
-                if(act.length===0) act = s.filter(x=>!l2Ids.includes(x.id) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
+                let l2Nombres = ['Lider','Santander','Tricot'];
+                let act = s.filter(x=>l2Nombres.includes(x.nombre) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
+                if(act.length===0) act = s.filter(x=>!l2Nombres.includes(x.nombre) && x.saldo>0).sort((a,b)=>a.saldo-b.saldo);
                 
                 if(act.length>0) {
                     for(let i=1; i<act.length; i++) {
                         let p = Math.min(act[i].saldo, act[i].minimo); disp2 -= p; act[i].saldo -= p;
-                        html += `<tr><td>${m}</td><td>${act[i].nombre}</td><td><span class="text-muted">Min</span> ${fmt(p)}</td><td>${fmt(act[i].saldo)}</td></tr>`;
+                        html += `<tr><td>${m}</td><td class="fw-medium">${act[i].nombre}</td><td><span class="text-muted small">Min</span> ${fmt(p)}</td><td class="fw-bold">${fmt(act[i].saldo)}</td></tr>`;
                     }
                     let obj = act[0], p = Math.min(obj.saldo, disp2); disp2 -= p; obj.saldo -= p;
-                    html += `<tr><td>${m}</td><td><strong class="text-accent">${obj.nombre}</strong></td><td><strong class="text-success-custom">Nieve</strong> ${fmt(p)}</td><td>${fmt(obj.saldo)}</td></tr>`;
+                    html += `<tr><td>${m}</td><td class="text-accent fw-bold">${obj.nombre}</td><td><span class="text-success-custom small fw-bold"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:middle;">snowing</span></span> ${fmt(p)}</td><td class="fw-bold">${fmt(obj.saldo)}</td></tr>`;
                 }
                 m++;
             }
             document.getElementById('proyeccionContainer').innerHTML = html + `</tbody></table>`;
         }
 
-        // VISTA: GASTOS EXTRA
-        document.getElementById('formGasto').addEventListener('submit', (e) => {
+        document.getElementById('formGasto').addEventListener('submit', async (e) => {
             e.preventDefault();
-            state.gastosExtra.push({
-                id: Date.now(),
-                desc: document.getElementById('descGasto').value,
-                monto: parseFloat(document.getElementById('montoGasto').value),
-                fecha: new Date().toLocaleDateString()
-            });
-            document.getElementById('formGasto').reset();
-            saveState();
+            const btn = e.target.querySelector('button');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+            btn.disabled = true;
+            
+            const desc = document.getElementById('descGasto').value;
+            const monto = parseFloat(document.getElementById('montoGasto').value);
+            
+            const { data, error } = await supabase.from('Finanzas_Movimientos').insert([{ user_id: currentUser.id, descripcion: desc, monto: monto }]).select().single();
+            if(data) {
+                state.movimientos.unshift(data);
+                renderGastos();
+                e.target.reset();
+            }
+            btn.innerHTML = orig;
+            btn.disabled = false;
         });
 
-        function borrarGasto(id) {
-            state.gastosExtra = state.gastosExtra.filter(g => g.id !== id);
-            saveState();
+        window.borrarGasto = async (id, btnEl) => {
+            btnEl.disabled = true;
+            btnEl.innerHTML = '<span class="spinner-border spinner-border-sm" style="width: 1rem; height: 1rem;"></span>';
+            await supabase.from('Finanzas_Movimientos').delete().eq('id', id);
+            state.movimientos = state.movimientos.filter(g => g.id !== id);
+            renderGastos();
         }
 
         function renderGastos() {
             let html = '', total = 0;
-            [...state.gastosExtra].reverse().forEach(g => {
-                total += g.monto;
+            state.movimientos.forEach(g => {
+                total += Number(g.monto);
+                const fechaStr = new Date(g.creado_en).toLocaleDateString();
                 html += `
-                <div class="debt-item py-3">
-                    <div>
-                        <div style="font-weight: 500;">${g.desc}</div>
-                        <small class="text-muted">${g.fecha}</small>
+                <div class="debt-item bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="debt-icon" style="background-color: var(--accent-red-dim); color: var(--accent-red);">
+                            <span class="material-symbols-rounded">receipt</span>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-main); font-size: 1.05rem;">${g.descripcion}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${fechaStr}</div>
+                        </div>
                     </div>
                     <div class="d-flex align-items-center">
-                        <span class="fw-bold me-3 text-main">${fmt(g.monto)}</span>
-                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="borrarGasto(${g.id})">&times;</button>
+                        <span class="fw-bold me-3 text-main" style="font-size: 1.1rem;">${fmt(g.monto)}</span>
+                        <button class="btn-danger-icon" onclick="borrarGasto('${g.id}', this)">
+                            <span class="material-symbols-rounded" style="font-size: 20px;">delete</span>
+                        </button>
                     </div>
                 </div>`;
             });
-            if(html === '') html = '<div class="p-3 text-center text-muted">No hay gastos registrados</div>';
+            if(html === '') html = '<div class="p-4 text-center text-muted"><span class="material-symbols-rounded mb-2" style="font-size: 32px; opacity:0.5;">receipt_long</span><br>No hay gastos registrados</div>';
             document.getElementById('listaGastosExtra').innerHTML = html;
             document.getElementById('totalGastosExtra').textContent = fmt(total);
         }
 
-        init();
+        boot();
     </script>
 </body>
 </html>
