@@ -1052,8 +1052,8 @@
             
             let updates = [];
             let l1Deudas = state.deudas.filter(d => {
-                let dLote = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
-                return dLote == 1 && d.saldo > 0;
+                let dLote = parseInt(d.lote) || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
+                return dLote === 1 && d.saldo > 0;
             }).sort((a,b) => a.saldo - b.saldo);
             
             l1Deudas.forEach(d => {
@@ -1108,8 +1108,8 @@
             
             let updates = [];
             let l2Deudas = state.deudas.filter(d => {
-                let dLote = d.lote || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
-                return dLote == 2 && d.saldo > 0;
+                let dLote = parseInt(d.lote) || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
+                return dLote === 2 && d.saldo > 0;
             }).sort((a,b) => a.saldo - b.saldo);
             
             // Si no hay de Lote 2 activas, traemos las de Lote 1 que sigan activas para que se ataquen.
@@ -1365,11 +1365,8 @@
 
             const getLoteDeudas = (deudas, loteId) => {
                 return deudas.filter(d => {
-                    let dLote = d.lote;
-                    if (!dLote) {
-                        dLote = ['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2;
-                    }
-                    return dLote === loteId && d.saldo > 0;
+                    let dLote = parseInt(d.lote) || (['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) ? 1 : 2);
+                    return dLote === parseInt(loteId) && d.saldo > 0;
                 });
             };
 
