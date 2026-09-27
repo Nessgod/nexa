@@ -334,7 +334,7 @@
                     <div id="pozoActual" class="balance-amount">$0</div>
                     <div class="d-inline-flex align-items-center bg-custom-gray rounded-pill px-3 py-1 mt-2 border" style="border-color: var(--border-color) !important;">
                         <span class="material-symbols-rounded fs-6 me-2 text-warning-custom">calendar_month</span>
-                        <span class="small fw-semibold text-main">Mes de Simulación: <span id="mesBadge">1</span></span>
+                        <span class="small fw-semibold text-main" id="mesBadge">Octubre 2026</span>
                     </div>
                 </div>
                 <div class="card-body text-center py-4 bg-custom-gray">
@@ -557,6 +557,18 @@
         };
 
         const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
+
+        // Mes 1 = Octubre 2026 (mes base index 9, año 2026)
+        const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        const MES_BASE = 9; // Octubre = index 9
+        const AÑO_BASE = 2026;
+        
+        window.getNombreMes = (numMes) => {
+            const totalMes = MES_BASE + (numMes - 1);
+            const mesIdx = totalMes % 12;
+            const año = AÑO_BASE + Math.floor(totalMes / 12);
+            return `${MESES[mesIdx]} ${año}`;
+        };
 
         const parseCurrency = (val) => {
             if(!val) return 0;
@@ -1087,7 +1099,7 @@
             
             pendingLoteUpdates = { updates, disp: 0 };
             
-            document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 1 (Mes ${state.ciclo.mes})`;
+            document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 1 — ${getNombreMes(state.ciclo.mes)}`;
             document.getElementById('loteModalBody').innerHTML = checklistHTML;
             if (!modalInstance) modalInstance = new bootstrap.Modal(document.getElementById('loteModal'));
             recalcularLote1(); // Calculates and populates the leftover immediately
@@ -1182,7 +1194,7 @@
 
             pendingLoteUpdates = { updates, disp: 0 }; // Pozo vuelve a 0 tras Lote 2
             
-            document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 2 (Mes ${state.ciclo.mes})`;
+            document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 2 — ${getNombreMes(state.ciclo.mes)}`;
             document.getElementById('loteModalBody').innerHTML = checklistHTML;
             if (!modalInstance) modalInstance = new bootstrap.Modal(document.getElementById('loteModal'));
             modalInstance.show();
@@ -1228,7 +1240,7 @@
 
         // --- RENDERIZADO PRINCIPAL ---
         function renderNieve(recalcPozo = false) {
-            document.getElementById('mesBadge').textContent = state.ciclo.mes;
+            document.getElementById('mesBadge').textContent = getNombreMes(state.ciclo.mes);
             document.getElementById('pozoActual').textContent = fmt(state.ciclo.pozo);
             
             // Actualizar Totalizadores
@@ -1390,7 +1402,7 @@
                 html += `
                 <div class="carousel-item ${isFirst ? 'active' : ''}">
                     <div class="px-2">
-                        <h5 class="fw-bold text-main mb-3 ps-1 text-center">Mes ${m}</h5>
+                        <h5 class="fw-bold text-main mb-3 ps-1 text-center">${getNombreMes(m)}</h5>
                 `;
                 isFirst = false;
                 html += `
