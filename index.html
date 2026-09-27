@@ -1012,6 +1012,7 @@
             document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 1 (Mes ${state.ciclo.mes})`;
             document.getElementById('loteModalBody').innerHTML = checklistHTML;
             if (!modalInstance) modalInstance = new bootstrap.Modal(document.getElementById('loteModal'));
+            recalcularLote1(); // Calculates and populates the leftover immediately
             modalInstance.show();
         }
 
