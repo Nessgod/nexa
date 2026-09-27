@@ -193,6 +193,27 @@
         </div>
     </div>
 
+    <!-- MODAL CHECKLIST LOTE -->
+    <div class="modal fade" id="loteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="background-color: var(--bg-card); color: var(--text-main); border-radius: 20px;">
+          <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+            <div class="d-flex align-items-center">
+                <span class="material-symbols-rounded text-accent me-2 fs-3">checklist</span>
+                <h5 class="modal-title fw-bold" id="loteModalTitle">Checklist de Pagos</h5>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4" id="loteModalBody">
+            <!-- Dynamic Content -->
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+            <button type="button" class="btn btn-primary-custom w-100 btn-custom" id="btnConfirmarLote">Confirmar y Registrar Pagos</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- APP PRINCIPAL -->
     <div id="app-section" class="container app-container d-none">
         
@@ -228,18 +249,23 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-6">
-                    <button id="btnLote1" class="btn btn-primary-custom w-100 btn-custom" onclick="ejecutarLote1()">
+                    <button id="btnLote1" class="btn btn-primary-custom w-100 btn-custom" onclick="prepararLote1()">
                         <span class="material-symbols-rounded">play_arrow</span> Lote 1
                     </button>
                 </div>
                 <div class="col-6">
-                    <button id="btnLote2" class="btn btn-success-custom w-100 btn-custom" onclick="ejecutarLote2()" disabled>
+                    <button id="btnLote2" class="btn btn-success-custom w-100 btn-custom" onclick="prepararLote2()" disabled>
                         <span class="material-symbols-rounded">bolt</span> Lote 2
                     </button>
                 </div>
             </div>
 
-            <h5 class="fw-bold mb-3 px-2 mt-2">Tarjetas Activas</h5>
+            <h5 class="fw-bold mb-3 px-2 mt-2">Gastos Fijos Base</h5>
+            <div class="card mb-4" id="listaGastosFijos">
+                <!-- Se renderizan los gastos fijos (Casa) -->
+            </div>
+
+            <h5 class="fw-bold mb-3 px-2">Tarjetas de Crédito Activas</h5>
             <div class="card" id="listaDeudas"></div>
         </div>
 
@@ -260,8 +286,8 @@
         <div id="view-gastos" class="d-none px-2">
             <div class="text-center mb-4 mt-2">
                 <span class="material-symbols-rounded text-success-custom mb-2" style="font-size: 48px;">receipt_long</span>
-                <h3 class="fw-bold mb-2">Otros Gastos</h3>
-                <p class="text-muted small">Monitorea tus gastos del día a día para no salirte del presupuesto.</p>
+                <h3 class="fw-bold mb-2">Gastos Flexibles</h3>
+                <p class="text-muted small">Monitorea tus gastos del día a día (supermercado, antojos, etc) para no salirte del presupuesto.</p>
             </div>
             
             <div class="card p-3 mb-4">
@@ -291,11 +317,11 @@
     <div id="bottom-nav" class="bottom-nav d-none">
         <div class="nav-item active" onclick="switchTab('nieve', this)">
             <span class="material-symbols-rounded">snowing</span>
-            Nieve
+            Plan Nieve
         </div>
         <div class="nav-item" onclick="switchTab('plan', this)">
             <span class="material-symbols-rounded">event_note</span>
-            Plan
+            Proyección
         </div>
         <div class="nav-item" onclick="switchTab('gastos', this)">
             <span class="material-symbols-rounded">wallet</span>
@@ -312,12 +338,18 @@
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
+        let pendingLoteUpdates = null; // Almacena temporalmente los pagos para confirmarlos en el modal
+        let pendingLoteType = null;
         
         let state = {
             ciclo: { mes: 1, fase: 0, pozo: 0 },
             deudas: [],
             movimientos: []
         };
+
+        const GASTOS_FIJOS = [
+            { nombre: 'Casa Completa (Dividendo, Luz, Agua)', monto: 584000, icon: 'home' }
+        ];
 
         const DEUDAS_BASE = [
             { nombre: 'Tricot', saldo: 164886, minimo: 30000, icon: 'credit_card' },
@@ -332,6 +364,8 @@
             const base = DEUDAS_BASE.find(d => d.nombre === nombre);
             return base ? base.icon : 'credit_card';
         };
+
+        const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
 
         async function boot() {
             const { data: { session } } = await supabase.auth.getSession();
@@ -429,92 +463,225 @@
             if(tab === 'plan') renderPlanProyectado();
         }
 
-        window.ejecutarLote1 = async () => {
+        // --- SISTEMA DE CHECKLIST (MODAL) ---
+        let modalInstance = null;
+
+        window.prepararLote1 = () => {
             if (state.ciclo.fase !== 0) return;
-            const btn = document.getElementById('btnLote1');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
-            btn.disabled = true;
+            pendingLoteType = 1;
+            const ingreso = 920000;
+            const gastoFijo = 584000;
+            let disp = ingreso - gastoFijo;
+            let checklistHTML = `
+                <div class="mb-3 pb-3 border-bottom">
+                    <h6 class="fw-bold text-success-custom mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">account_balance_wallet</span> Ingreso Lote 1</h6>
+                    <div class="d-flex justify-content-between"><span>Fondo Día 5</span> <strong>+${fmt(ingreso)}</strong></div>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos</h6>
+                    <div class="d-flex justify-content-between text-danger-custom">
+                        <label><input type="checkbox" checked disabled class="me-2">Casa Completa</label>
+                        <strong>-${fmt(gastoFijo)}</strong>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">credit_card</span> Pago de Tarjetas (Retail)</h6>
+            `;
             
-            let disp = 920000 - 584000;
             let updates = [];
             ['Falabella', 'Cencosud', 'Itaú'].forEach(nombre => {
                 let d = state.deudas.find(x => x.nombre === nombre);
                 if (d && d.saldo > 0) {
                     let pago = Math.min(d.saldo, d.minimo);
-                    disp -= pago; d.saldo -= pago;
-                    updates.push(d);
+                    disp -= pago;
+                    updates.push({ ...d, saldo: d.saldo - pago, pagoRealizado: pago });
+                    checklistHTML += `
+                    <div class="d-flex justify-content-between text-danger-custom mt-1">
+                        <label><input type="checkbox" checked disabled class="me-2">${d.nombre} (Mínimo)</label>
+                        <strong>-${fmt(pago)}</strong>
+                    </div>`;
                 }
             });
             
-            state.ciclo.pozo = disp; state.ciclo.fase = 1; 
-            await Promise.all(updates.map(u => supabase.from('Finanzas_Deudas').update({ saldo: u.saldo }).eq('id', u.id)));
-            await supabase.from('Finanzas_Ciclo').update({ pozo: disp, fase: 1 }).eq('user_id', currentUser.id);
+            checklistHTML += `
+                </div>
+                <div class="mt-4 p-3 bg-custom-gray rounded-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-main">Sobrante al Pozo:</span>
+                    <span class="fs-5 fw-bold text-success-custom">${fmt(disp)}</span>
+                </div>
+            `;
             
-            renderNieve();
+            pendingLoteUpdates = { updates, disp };
+            
+            document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 1 (Mes ${state.ciclo.mes})`;
+            document.getElementById('loteModalBody').innerHTML = checklistHTML;
+            if (!modalInstance) modalInstance = new bootstrap.Modal(document.getElementById('loteModal'));
+            modalInstance.show();
         }
 
-        window.ejecutarLote2 = async () => {
+        window.prepararLote2 = () => {
             if (state.ciclo.fase !== 1) return;
-            const btn = document.getElementById('btnLote2');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
-            btn.disabled = true;
-
-            let disp = 250000 + Number(state.ciclo.pozo);
+            pendingLoteType = 2;
+            const ingreso = 250000;
+            const pozoAnterior = Number(state.ciclo.pozo);
+            let disp = ingreso + pozoAnterior;
+            
+            let checklistHTML = `
+                <div class="mb-3 pb-3 border-bottom">
+                    <h6 class="fw-bold text-success-custom mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">account_balance_wallet</span> Fondos Disponibles</h6>
+                    <div class="d-flex justify-content-between"><span>Quincena (Día 15)</span> <strong>+${fmt(ingreso)}</strong></div>
+                    <div class="d-flex justify-content-between"><span>Pozo Acumulado</span> <strong>+${fmt(pozoAnterior)}</strong></div>
+                    <div class="d-flex justify-content-between mt-2 border-top pt-1 fw-bold"><span>Total a Disparar:</span> <strong>${fmt(disp)}</strong></div>
+                </div>
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-1 text-danger-custom"><span class="material-symbols-rounded fs-5 align-middle me-1">target</span> Ejecución de Pagos</h6>
+            `;
+            
             let updates = [];
             let lote2Nombres = ['Lider', 'Santander', 'Tricot'];
             let activas = state.deudas.filter(d => lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
-            
-            if (activas.length === 0) {
-                activas = state.deudas.filter(d => !lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo);
-            }
+            if (activas.length === 0) { activas = state.deudas.filter(d => !lote2Nombres.includes(d.nombre) && d.saldo > 0).sort((a,b) => a.saldo - b.saldo); }
 
             if (activas.length > 0) {
+                // Mínimos
                 for (let i = 1; i < activas.length; i++) {
                     let pago = Math.min(activas[i].saldo, activas[i].minimo);
-                    disp -= pago; activas[i].saldo -= pago;
-                    updates.push(activas[i]);
+                    disp -= pago; 
+                    updates.push({ ...activas[i], saldo: activas[i].saldo - pago, pagoRealizado: pago, tipo: 'Mínimo' });
+                    checklistHTML += `
+                    <div class="d-flex justify-content-between text-danger-custom mt-1">
+                        <label><input type="checkbox" checked disabled class="me-2">${activas[i].nombre} (Mínimo)</label>
+                        <strong>-${fmt(pago)}</strong>
+                    </div>`;
                 }
+                
+                // Objetivo Principal (Ataque Nieve)
                 let objetivo = activas[0];
                 let ataque = Math.min(objetivo.saldo, disp);
-                disp -= ataque; objetivo.saldo -= ataque;
-                updates.push(objetivo);
+                disp -= ataque;
+                updates.push({ ...objetivo, saldo: objetivo.saldo - ataque, pagoRealizado: ataque, tipo: 'ATAQUE NIEVE' });
+                checklistHTML += `
+                <div class="d-flex justify-content-between text-accent mt-2 fw-bold p-2 bg-accent-dim rounded">
+                    <label><input type="checkbox" checked disabled class="me-2">${objetivo.nombre} (🔥 ATAQUE)</label>
+                    <strong>-${fmt(ataque)}</strong>
+                </div>`;
                 
+                // Spillover
                 let idx = 1;
                 while(disp > 0 && idx < activas.length) {
                     let sig = activas[idx];
                     let spill = Math.min(sig.saldo, disp);
-                    disp -= spill; sig.saldo -= spill;
-                    if(!updates.includes(sig)) updates.push(sig);
+                    disp -= spill;
+                    let existing = updates.find(u => u.id === sig.id);
+                    if(existing) {
+                        existing.saldo -= spill;
+                        existing.pagoRealizado += spill;
+                    } else {
+                        updates.push({ ...sig, saldo: sig.saldo - spill, pagoRealizado: spill, tipo: 'SPILLOVER' });
+                    }
+                    checklistHTML += `
+                    <div class="d-flex justify-content-between text-warning-custom mt-1 fw-bold p-1">
+                        <label><input type="checkbox" checked disabled class="me-2">${sig.nombre} (Spillover)</label>
+                        <strong>-${fmt(spill)}</strong>
+                    </div>`;
                     idx++;
                 }
             }
-
-            state.ciclo.pozo = 0; state.ciclo.fase = 0; state.ciclo.mes += 1; 
-            await Promise.all(updates.map(u => supabase.from('Finanzas_Deudas').update({ saldo: u.saldo }).eq('id', u.id)));
-            await supabase.from('Finanzas_Ciclo').update({ pozo: 0, fase: 0, mes: state.ciclo.mes }).eq('user_id', currentUser.id);
             
-            renderNieve();
+            checklistHTML += `
+                </div>
+                <div class="mt-4 p-3 bg-custom-gray rounded-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-main">Sobrante a Cero:</span>
+                    <span class="fs-5 fw-bold text-muted">${fmt(disp)}</span>
+                </div>
+            `;
+
+            pendingLoteUpdates = { updates, disp: 0 }; // Pozo vuelve a 0 tras Lote 2
+            
+            document.getElementById('loteModalTitle').textContent = `Ejecutar Lote 2 (Mes ${state.ciclo.mes})`;
+            document.getElementById('loteModalBody').innerHTML = checklistHTML;
+            if (!modalInstance) modalInstance = new bootstrap.Modal(document.getElementById('loteModal'));
+            modalInstance.show();
         }
 
-        const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
+        document.getElementById('btnConfirmarLote').addEventListener('click', async (e) => {
+            const btn = e.target;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando pagos...';
+            btn.disabled = true;
 
+            if(pendingLoteType === 1) {
+                state.ciclo.pozo = pendingLoteUpdates.disp; 
+                state.ciclo.fase = 1; 
+                
+                pendingLoteUpdates.updates.forEach(u => {
+                    let realD = state.deudas.find(d => d.id === u.id);
+                    if(realD) realD.saldo = u.saldo;
+                });
+
+                await Promise.all(pendingLoteUpdates.updates.map(u => supabase.from('Finanzas_Deudas').update({ saldo: u.saldo }).eq('id', u.id)));
+                await supabase.from('Finanzas_Ciclo').update({ pozo: state.ciclo.pozo, fase: 1 }).eq('user_id', currentUser.id);
+            } 
+            else if(pendingLoteType === 2) {
+                pendingLoteUpdates.updates.forEach(u => {
+                    let realD = state.deudas.find(d => d.id === u.id);
+                    if(realD) realD.saldo = u.saldo;
+                });
+
+                state.ciclo.pozo = 0; 
+                state.ciclo.fase = 0; 
+                state.ciclo.mes += 1; 
+
+                await Promise.all(pendingLoteUpdates.updates.map(u => supabase.from('Finanzas_Deudas').update({ saldo: u.saldo }).eq('id', u.id)));
+                await supabase.from('Finanzas_Ciclo').update({ pozo: 0, fase: 0, mes: state.ciclo.mes }).eq('user_id', currentUser.id);
+            }
+
+            modalInstance.hide();
+            btn.innerHTML = 'Confirmar y Registrar Pagos';
+            btn.disabled = false;
+            
+            renderNieve();
+        });
+
+        // --- RENDERIZADO PRINCIPAL ---
         function renderNieve() {
             document.getElementById('mesBadge').textContent = state.ciclo.mes;
             document.getElementById('pozoActual').textContent = fmt(state.ciclo.pozo);
             
             const b1 = document.getElementById('btnLote1'), b2 = document.getElementById('btnLote2'), ec = document.getElementById('estadoCiclo');
             if (state.ciclo.fase === 0) {
-                b1.disabled = false; b1.innerHTML = '<span class="material-symbols-rounded">play_arrow</span> Lote 1';
-                b2.disabled = true; b2.innerHTML = '<span class="material-symbols-rounded">bolt</span> Lote 2';
+                b1.disabled = false; b1.innerHTML = '<span class="material-symbols-rounded">play_arrow</span> Ejecutar Lote 1';
+                b2.disabled = true; b2.innerHTML = '<span class="material-symbols-rounded">lock</span> Lote 2 Bloqueado';
                 ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1 text-accent'>hourglass_empty</span> Esperando Lote 1"; 
                 ec.className = "text-accent mb-0 fw-bold";
             } else {
-                b1.disabled = true; b1.innerHTML = '<span class="material-symbols-rounded">check</span> Lote 1 (Listo)';
-                b2.disabled = false; b2.innerHTML = '<span class="material-symbols-rounded">bolt</span> Lote 2';
+                b1.disabled = true; b1.innerHTML = '<span class="material-symbols-rounded">check</span> Lote 1 (Pagado)';
+                b2.disabled = false; b2.innerHTML = '<span class="material-symbols-rounded">bolt</span> ¡Atacar Lote 2!';
                 ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1 text-warning-custom'>target</span> Esperando Lote 2"; 
                 ec.className = "text-warning-custom mb-0 fw-bold";
             }
 
+            // Render Gastos Fijos (Casa)
+            let fijosHtml = '';
+            GASTOS_FIJOS.forEach(g => {
+                fijosHtml += `
+                <div class="debt-item bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="debt-icon bg-secondary bg-opacity-10 text-secondary">
+                            <span class="material-symbols-rounded">${g.icon}</span>
+                        </div>
+                        <div>
+                            <div style="font-size:1.05rem; font-weight:600; color:var(--text-main);">${g.nombre}</div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Se paga en Lote 1</div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(g.monto)}</div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('listaGastosFijos').innerHTML = fijosHtml;
+
+            // Render Deudas Activas
             let html = '', pagadas = true;
             [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
                 if(d.saldo > 0) pagadas = false;
@@ -537,7 +704,12 @@
                 </div>`;
             });
             document.getElementById('listaDeudas').innerHTML = html;
-            if(pagadas) { ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1'>celebration</span> ¡LIBRE DE DEUDAS!"; ec.className = "text-success-custom fw-bold mb-0"; b1.disabled = b2.disabled = true; }
+            
+            if(pagadas) { 
+                ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1'>celebration</span> ¡LIBRE DE DEUDAS!"; 
+                ec.className = "text-success-custom fw-bold mb-0"; 
+                b1.disabled = b2.disabled = true; 
+            }
         }
 
         function renderPlanProyectado() {
