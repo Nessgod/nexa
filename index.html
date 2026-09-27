@@ -403,7 +403,7 @@
                 <p class="text-muted small">Cálculo automático hasta alcanzar Deuda $0 basado en tus saldos actuales.</p>
             </div>
             
-            <div class="card" style="overflow-x: auto;">
+            <div class="card pt-3">
                 <div id="proyeccionContainer"></div>
             </div>
         </div>
@@ -1339,7 +1339,10 @@
             let totalFijos = fijos.reduce((sum, g) => sum + g.monto, 0);
 
             let m = state.ciclo.mes, maxM = m + 30;
-            let html = '';
+            let html = `
+            <div id="planCarousel" class="carousel slide" data-bs-interval="false">
+                <div class="carousel-inner">`;
+            let isFirst = true;
 
             const getBadgeClass = (estado) => {
                 if(estado === '¡CERRAR TARJETA!') return 'bg-success-custom text-white';
@@ -1368,8 +1371,10 @@
                 let target = s.filter(x => x.saldo > 0).sort((a,b) => a.saldo - b.saldo)[0];
                 let disp1 = Math.max(0, ing1 - totalFijos);
                 
-                html += `<div class="mb-4">
-                    <h5 class="fw-bold text-main mb-3 ps-1">Ciclo: Mes ${m}</h5>
+                html += `
+                <div class="carousel-item ${isFirst ? 'active' : ''}">
+                    <div class="px-2">
+                        <h5 class="fw-bold text-main mb-3 ps-1 text-center">Mes ${m}</h5>
                     
                     <!-- LOTE 1 -->
                     <div class="card shadow-sm border-0 mb-3">
@@ -1525,10 +1530,24 @@
                     </div>`;
                 }
                 
-                html += `</div>`; // Close Month div
+                html += `</div></div>`; // Close px-2 and carousel-item
 
                 m++;
             }
+            
+            html += `
+                </div>
+                <!-- Controles -->
+                <div class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3">
+                    <button class="btn btn-outline-secondary rounded-circle d-flex justify-content-center align-items-center" type="button" data-bs-target="#planCarousel" data-bs-slide="prev" style="width:40px; height:40px; border-color: rgba(0,0,0,0.1);">
+                        <span class="material-symbols-rounded text-dark">chevron_left</span>
+                    </button>
+                    <span class="text-muted small fw-bold">Desliza para ver más</span>
+                    <button class="btn btn-outline-secondary rounded-circle d-flex justify-content-center align-items-center" type="button" data-bs-target="#planCarousel" data-bs-slide="next" style="width:40px; height:40px; border-color: rgba(0,0,0,0.1);">
+                        <span class="material-symbols-rounded text-dark">chevron_right</span>
+                    </button>
+                </div>
+            </div>`;
             document.getElementById('proyeccionContainer').innerHTML = html;
         }
 
