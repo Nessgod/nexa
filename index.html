@@ -226,6 +226,62 @@
       </div>
     </div>
 
+    <!-- MODAL DEUDA -->
+    <div class="modal fade" id="modalDeuda" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="background-color: var(--bg-card); color: var(--text-main); border-radius: 20px;">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold" id="modalDeudaTitle">Agregar Tarjeta</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="deudaId">
+            <div class="mb-3">
+                <label class="form-label small text-muted">Nombre de la Tarjeta/Deuda</label>
+                <input type="text" id="deudaNombre" class="form-control" placeholder="Ej: CMR Falabella">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-muted">Saldo Total Actual ($)</label>
+                <input type="number" id="deudaSaldo" class="form-control" placeholder="Ej: 1500000">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-muted">Pago Mínimo Mensual ($)</label>
+                <input type="number" id="deudaMinimo" class="form-control" placeholder="Ej: 45000">
+            </div>
+          </div>
+          <div class="modal-footer border-top-0 pt-0">
+            <button type="button" class="btn btn-primary-custom w-100 btn-custom" onclick="guardarDeuda()">Guardar Tarjeta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL GASTO FIJO -->
+    <div class="modal fade" id="modalGastoFijo" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="background-color: var(--bg-card); color: var(--text-main); border-radius: 20px;">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold" id="modalGastoFijoTitle">Agregar Gasto Fijo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="gastoFijoId">
+            <div class="mb-3">
+                <label class="form-label small text-muted">Descripción</label>
+                <input type="text" id="gastoFijoNombre" class="form-control" placeholder="Ej: Luz y Agua">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-muted">Monto Mensual ($)</label>
+                <input type="number" id="gastoFijoMonto" class="form-control" placeholder="Ej: 45000">
+            </div>
+          </div>
+          <div class="modal-footer border-top-0 pt-0">
+            <button type="button" class="btn btn-primary-custom w-100 btn-custom" onclick="guardarGastoFijo()">Guardar Gasto Fijo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- APP PRINCIPAL -->
     <div id="app-section" class="container app-container d-none">
         
@@ -321,6 +377,47 @@
                 <h5 id="totalGastosExtra" class="text-danger-custom fw-bold mb-0">$0</h5>
             </div>
             <div class="card" id="listaGastosExtra"></div>
+        <!-- VISTA 4: AJUSTES -->
+        <div id="view-ajustes" class="d-none px-2">
+            <div class="text-center mb-4 mt-2">
+                <span class="material-symbols-rounded text-muted mb-2" style="font-size: 48px;">tune</span>
+                <h3 class="fw-bold mb-2">Configuración Dinámica</h3>
+                <p class="text-muted small">Edita tus deudas, ingresos y gastos fijos en cualquier momento.</p>
+            </div>
+            
+            <!-- TARJETAS -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Mis Tarjetas</h5>
+                <button class="btn btn-sm btn-primary-custom px-3 rounded-pill" onclick="abrirModalDeuda()"><span class="material-symbols-rounded" style="font-size:16px">add</span> Agregar</button>
+            </div>
+            <div class="card mb-4 p-2" id="ajustesDeudasLista"></div>
+
+            <!-- INGRESOS -->
+            <h5 class="fw-bold mb-3 mt-4">Mis Ingresos</h5>
+            <div class="card p-3 mb-4">
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-1">Ingreso Lote 1 (Día 5)</label>
+                    <input type="number" id="ajusteIngreso1" class="form-control" onchange="guardarIngresos()">
+                </div>
+                <div>
+                    <label class="form-label small text-muted mb-1">Ingreso Lote 2 (Día 15)</label>
+                    <input type="number" id="ajusteIngreso2" class="form-control" onchange="guardarIngresos()">
+                </div>
+            </div>
+
+            <!-- GASTOS FIJOS -->
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+                <h5 class="fw-bold mb-0">Gastos Fijos Lote 1</h5>
+                <button class="btn btn-sm btn-primary-custom px-3 rounded-pill" onclick="abrirModalGastoFijo()"><span class="material-symbols-rounded" style="font-size:16px">add</span> Agregar</button>
+            </div>
+            <div class="card mb-5 p-2" id="ajustesGastosFijosLista"></div>
+            
+            <!-- RESETEAR CICLO -->
+            <div class="card p-3 mb-5 border-danger bg-danger bg-opacity-10" style="border-style: dashed !important;">
+                <h6 class="fw-bold text-danger"><span class="material-symbols-rounded align-middle me-1">warning</span> Zona de Peligro</h6>
+                <p class="small text-danger opacity-75 mb-3">Si te equivocaste o quieres empezar el plan desde cero (Mes 1).</p>
+                <button class="btn btn-danger w-100 fw-bold rounded-pill" onclick="resetearCiclo()">Reiniciar Plan Bola de Nieve</button>
+            </div>
         </div>
         
     </div>
@@ -338,6 +435,10 @@
         <div class="nav-item" onclick="switchTab('gastos', this)">
             <span class="material-symbols-rounded">wallet</span>
             Gastos
+        </div>
+        <div class="nav-item" onclick="switchTab('ajustes', this)">
+            <span class="material-symbols-rounded">tune</span>
+            Ajustes
         </div>
     </div>
 
@@ -472,10 +573,177 @@
             document.getElementById('view-nieve').classList.add('d-none');
             document.getElementById('view-plan').classList.add('d-none');
             document.getElementById('view-gastos').classList.add('d-none');
+            document.getElementById('view-ajustes').classList.add('d-none');
             
             document.getElementById('view-' + tab).classList.remove('d-none');
             window.scrollTo(0, 0);
+            
             if(tab === 'plan') renderPlanProyectado();
+            if(tab === 'ajustes') renderAjustes();
+        }
+
+        let modalDeudaInstance = null;
+        let modalGastoFijoInstance = null;
+
+        window.renderAjustes = () => {
+            // Ingresos
+            document.getElementById('ajusteIngreso1').value = localStorage.getItem('nexa_lote1_ingreso') || 920000;
+            document.getElementById('ajusteIngreso2').value = localStorage.getItem('nexa_lote2_ingreso') || 250000;
+            
+            // Gastos Fijos
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            let htmlFijos = '';
+            fijos.forEach((g, idx) => {
+                htmlFijos += `
+                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <div>
+                        <div class="fw-bold">${g.nombre}</div>
+                        <div class="text-danger-custom fw-bold">${fmt(g.monto)}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary px-2 py-1 me-1" onclick="abrirModalGastoFijo(${idx})"><span class="material-symbols-rounded" style="font-size:16px">edit</span></button>
+                        <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="eliminarGastoFijo(${idx})"><span class="material-symbols-rounded" style="font-size:16px">delete</span></button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('ajustesGastosFijosLista').innerHTML = htmlFijos;
+
+            // Deudas
+            let htmlDeudas = '';
+            [...state.deudas].sort((a,b) => a.saldo - b.saldo).forEach(d => {
+                htmlDeudas += `
+                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <div>
+                        <div class="fw-bold">${d.nombre}</div>
+                        <div class="small text-muted">Saldo: ${fmt(d.saldo)} | Mín: ${fmt(d.minimo)}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary px-2 py-1" onclick="abrirModalDeuda('${d.id}')"><span class="material-symbols-rounded" style="font-size:16px">edit</span></button>
+                        <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="eliminarDeuda('${d.id}')"><span class="material-symbols-rounded" style="font-size:16px">delete</span></button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('ajustesDeudasLista').innerHTML = htmlDeudas;
+        }
+
+        window.guardarIngresos = () => {
+            localStorage.setItem('nexa_lote1_ingreso', document.getElementById('ajusteIngreso1').value);
+            localStorage.setItem('nexa_lote2_ingreso', document.getElementById('ajusteIngreso2').value);
+            renderNieve(true);
+        }
+
+        // --- CRUD Gastos Fijos ---
+        window.abrirModalGastoFijo = (idx = -1) => {
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            if (idx >= 0) {
+                let g = fijos[idx];
+                document.getElementById('gastoFijoId').value = idx;
+                document.getElementById('gastoFijoNombre').value = g.nombre;
+                document.getElementById('gastoFijoMonto').value = g.monto;
+                document.getElementById('modalGastoFijoTitle').textContent = 'Editar Gasto Fijo';
+            } else {
+                document.getElementById('gastoFijoId').value = '';
+                document.getElementById('gastoFijoNombre').value = '';
+                document.getElementById('gastoFijoMonto').value = '';
+                document.getElementById('modalGastoFijoTitle').textContent = 'Nuevo Gasto Fijo';
+            }
+            if (!modalGastoFijoInstance) modalGastoFijoInstance = new bootstrap.Modal(document.getElementById('modalGastoFijo'));
+            modalGastoFijoInstance.show();
+        }
+
+        window.guardarGastoFijo = () => {
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            let idx = document.getElementById('gastoFijoId').value;
+            let obj = {
+                nombre: document.getElementById('gastoFijoNombre').value,
+                monto: parseFloat(document.getElementById('gastoFijoMonto').value) || 0,
+                icon: 'home'
+            };
+            
+            if(idx !== '') { fijos[idx] = obj; } 
+            else { fijos.push(obj); }
+            
+            localStorage.setItem('nexa_gastos_fijos', JSON.stringify(fijos));
+            modalGastoFijoInstance.hide();
+            renderAjustes();
+            renderNieve(true);
+        }
+
+        window.eliminarGastoFijo = (idx) => {
+            if(!confirm('¿Eliminar este gasto fijo?')) return;
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            fijos.splice(idx, 1);
+            localStorage.setItem('nexa_gastos_fijos', JSON.stringify(fijos));
+            renderAjustes();
+            renderNieve(true);
+        }
+
+        // --- CRUD Deudas ---
+        window.abrirModalDeuda = (id = '') => {
+            if (id) {
+                let d = state.deudas.find(x => x.id === id);
+                document.getElementById('deudaId').value = d.id;
+                document.getElementById('deudaNombre').value = d.nombre;
+                document.getElementById('deudaSaldo').value = d.saldo;
+                document.getElementById('deudaMinimo').value = d.minimo;
+                document.getElementById('modalDeudaTitle').textContent = 'Editar Tarjeta';
+            } else {
+                document.getElementById('deudaId').value = '';
+                document.getElementById('deudaNombre').value = '';
+                document.getElementById('deudaSaldo').value = '';
+                document.getElementById('deudaMinimo').value = '';
+                document.getElementById('modalDeudaTitle').textContent = 'Nueva Tarjeta';
+            }
+            if (!modalDeudaInstance) modalDeudaInstance = new bootstrap.Modal(document.getElementById('modalDeuda'));
+            modalDeudaInstance.show();
+        }
+
+        window.guardarDeuda = async () => {
+            const btn = document.querySelector('#modalDeuda .btn-primary-custom');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+            btn.disabled = true;
+
+            const id = document.getElementById('deudaId').value;
+            const obj = {
+                user_id: currentUser.id,
+                nombre: document.getElementById('deudaNombre').value,
+                saldo: parseFloat(document.getElementById('deudaSaldo').value) || 0,
+                minimo: parseFloat(document.getElementById('deudaMinimo').value) || 0
+            };
+
+            if (id) {
+                await supabase.from('Finanzas_Deudas').update(obj).eq('id', id);
+                let idx = state.deudas.findIndex(x => x.id === id);
+                if(idx > -1) state.deudas[idx] = { ...state.deudas[idx], ...obj };
+            } else {
+                const { data } = await supabase.from('Finanzas_Deudas').insert([obj]).select().single();
+                if(data) state.deudas.push(data);
+            }
+
+            modalDeudaInstance.hide();
+            btn.innerHTML = 'Guardar Tarjeta';
+            btn.disabled = false;
+            renderAjustes();
+            renderNieve(true);
+        }
+
+        window.eliminarDeuda = async (id) => {
+            if(!confirm('¿Eliminar esta tarjeta permanentemente?')) return;
+            await supabase.from('Finanzas_Deudas').delete().eq('id', id);
+            state.deudas = state.deudas.filter(x => x.id !== id);
+            renderAjustes();
+            renderNieve(true);
+        }
+
+        window.resetearCiclo = async () => {
+            if(!confirm('🚨 PELIGRO: Esto reiniciará el plan al Mes 1 y Fase 0. ¿Estás seguro?')) return;
+            state.ciclo.mes = 1;
+            state.ciclo.fase = 0;
+            state.ciclo.pozo = 0;
+            await supabase.from('Finanzas_Ciclo').update({ mes: 1, fase: 0, pozo: 0 }).eq('user_id', currentUser.id);
+            renderAjustes();
+            renderNieve(true);
+            alert('El ciclo ha sido reiniciado.');
         }
 
         // --- SISTEMA DE CHECKLIST (MODAL) ---
@@ -484,12 +752,19 @@
         window.recalcularLote1 = () => {
             if(pendingLoteType !== 1) return;
             const ing = parseFloat(document.getElementById('lote1Ingreso').value) || 0;
-            const gFijo = parseFloat(document.getElementById('lote1GastoBase').value) || 0;
+            
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            let totalFijos = 0;
+            document.querySelectorAll('.gasto-base-input').forEach(el => {
+                let v = parseFloat(el.value) || 0;
+                totalFijos += v;
+                fijos[el.dataset.idx].monto = v;
+            });
             
             localStorage.setItem('nexa_lote1_ingreso', ing);
-            localStorage.setItem('nexa_lote1_gasto', gFijo);
+            localStorage.setItem('nexa_gastos_fijos', JSON.stringify(fijos));
             
-            let disp = ing - gFijo;
+            let disp = ing - totalFijos;
             let sumTarjetas = 0;
             
             ['Falabella', 'Cencosud', 'Itaú'].forEach(nombre => {
@@ -506,6 +781,7 @@
             
             // Actualizar vista principal en vivo si está detrás
             renderNieve(true);
+            renderAjustes(); // Por si la vista ajustes también está abierta o en caché
         };
 
         window.prepararLote1 = () => {
@@ -513,8 +789,9 @@
             pendingLoteType = 1;
             
             const ingreso = parseFloat(localStorage.getItem('nexa_lote1_ingreso')) || 920000;
-            const gastoFijo = parseFloat(localStorage.getItem('nexa_lote1_gasto')) || 584000;
-            let disp = ingreso - gastoFijo;
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
+            let totalFijos = fijos.reduce((sum, g) => sum + g.monto, 0);
+            let disp = ingreso - totalFijos;
             
             let checklistHTML = `
                 <div class="mb-3 pb-3 border-bottom">
@@ -528,14 +805,20 @@
                     </div>
                 </div>
                 <div class="mb-3 pb-3 border-bottom">
-                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos (Editables)</h6>
+                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos (Editables)</h6>`;
+            
+            fijos.forEach((g, idx) => {
+                checklistHTML += `
                     <div class="d-flex justify-content-between align-items-center mt-2 text-danger-custom">
-                        <label class="d-flex align-items-center"><input type="checkbox" checked disabled class="me-2" style="opacity: 0.6;">Casa Completa</label>
+                        <label class="d-flex align-items-center"><input type="checkbox" checked disabled class="me-2" style="opacity: 0.6;">${g.nombre}</label>
                         <div class="input-group input-group-sm" style="width: 140px;">
                             <span class="input-group-text bg-transparent text-danger-custom border-end-0" style="border-color: rgba(220, 38, 38, 0.3);">$</span>
-                            <input type="number" id="lote1GastoBase" class="form-control border-start-0 text-end fw-bold text-danger-custom px-1" style="border-color: rgba(220, 38, 38, 0.3);" value="${gastoFijo}" oninput="recalcularLote1()">
+                            <input type="number" data-idx="${idx}" class="form-control border-start-0 text-end fw-bold text-danger-custom px-1 gasto-base-input" style="border-color: rgba(220, 38, 38, 0.3);" value="${g.monto}" oninput="recalcularLote1()">
                         </div>
-                    </div>
+                    </div>`;
+            });
+            
+            checklistHTML += `
                 </div>
                 <div class="mb-3">
                     <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">credit_card</span> Pago de Tarjetas (Retail)</h6>
@@ -713,11 +996,10 @@
                 ec.className = "text-warning-custom mb-0 fw-bold";
             }
 
-            // Render Gastos Fijos (Casa)
+            // Render Gastos Fijos
+            let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
             let fijosHtml = '';
-            const storedGastoBase = parseFloat(localStorage.getItem('nexa_lote1_gasto')) || GASTOS_FIJOS[0].monto;
-            
-            GASTOS_FIJOS.forEach(g => {
+            fijos.forEach(g => {
                 fijosHtml += `
                 <div class="debt-item bg-transparent">
                     <div class="d-flex align-items-center">
@@ -730,7 +1012,7 @@
                         </div>
                     </div>
                     <div class="text-end">
-                        <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(storedGastoBase)}</div>
+                        <div style="font-size:1.1rem; font-weight:700;" class="text-main">${fmt(g.monto)}</div>
                     </div>
                 </div>`;
             });
