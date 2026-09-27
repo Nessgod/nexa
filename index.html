@@ -591,6 +591,12 @@
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     localStorage.setItem('nexa_avatar_' + name, dataUrl);
                     document.getElementById('imgAvatar' + name).src = dataUrl;
+                    
+                    // Sincronizar con Supabase si está logueado
+                    if (window.currentUser) {
+                        const col = name === 'Bryan' ? 'avatar_bryan' : 'avatar_katia';
+                        supabase.from('Finanzas_Ciclo').update({ [col]: dataUrl }).eq('user_id', currentUser.id).then();
+                    }
                 }
                 img.src = event.target.result;
             }
@@ -605,6 +611,29 @@
             const profile = localStorage.getItem('nexa_profile') || 'Usuario';
             document.getElementById('userName').textContent = profile;
             
+            await loadData();
+        }
+
+        async function loadData() {
+            let { data: ciclo } = await supabase.from('Finanzas_Ciclo').select('*').eq('user_id', currentUser.id).single();
+            if (!ciclo) {
+                const { data: newCiclo } = await supabase.from('Finanzas_Ciclo').insert([{ user_id: currentUser.id }]).select().single();
+                state.ciclo = newCiclo || { mes: 1, fase: 0, pozo: 0 };
+            } else { 
+                state.ciclo = ciclo; 
+                // Actualizar Avatares desde DB
+                if (ciclo.avatar_bryan) {
+                    localStorage.setItem('nexa_avatar_Bryan', ciclo.avatar_bryan);
+                    document.getElementById('imgAvatarBryan').src = ciclo.avatar_bryan;
+                }
+                if (ciclo.avatar_katia) {
+                    localStorage.setItem('nexa_avatar_Katia', ciclo.avatar_katia);
+                    document.getElementById('imgAvatarKatia').src = ciclo.avatar_katia;
+                }
+            }
+            
+            // Actualizar Top Bar Avatar
+            const profile = localStorage.getItem('nexa_profile') || 'Usuario';
             const topAvatar = document.getElementById('topBarAvatar');
             const savedAvatar = localStorage.getItem('nexa_avatar_' + profile);
             
@@ -618,16 +647,6 @@
                 topAvatar.src = 'katia.jpg';
                 topAvatar.classList.remove('d-none');
             }
-            
-            await loadData();
-        }
-
-        async function loadData() {
-            let { data: ciclo } = await supabase.from('Finanzas_Ciclo').select('*').eq('user_id', currentUser.id).single();
-            if (!ciclo) {
-                const { data: newCiclo } = await supabase.from('Finanzas_Ciclo').insert([{ user_id: currentUser.id }]).select().single();
-                state.ciclo = newCiclo || { mes: 1, fase: 0, pozo: 0 };
-            } else { state.ciclo = ciclo; }
 
             let { data: deudas } = await supabase.from('Finanzas_Deudas').select('*').eq('user_id', currentUser.id).order('saldo', { ascending: true });
             if (!deudas || deudas.length === 0) {
