@@ -190,7 +190,7 @@
         <div class="row g-4 mx-2">
             <div class="col-6">
                 <div class="card text-center p-4 profile-card bryan" onclick="loginAs('Bryan')">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bryan&backgroundColor=b6e3f4" class="rounded-circle mx-auto mb-3 shadow-sm" width="80" alt="Bryan">
+                    <img src="bryan.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Bryan">
                     <h5 class="fw-bold mb-0 text-main">Bryan</h5>
                 </div>
             </div>
@@ -759,67 +759,94 @@
 
         window.recalcularLote1 = () => {
             if(pendingLoteType !== 1) return;
-            const ing = parseFloat(document.getElementById('lote1Ingreso').value) || 0;
+            const ingB = parseFloat(document.getElementById('lote1IngresoB').value) || 0;
+            const ingK = parseFloat(document.getElementById('lote1IngresoK').value) || 0;
+            const ing = ingB + ingK;
             
             let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
             let totalFijos = 0;
             document.querySelectorAll('.gasto-base-input').forEach(el => {
                 let v = parseFloat(el.value) || 0;
-                totalFijos += v;
                 fijos[el.dataset.idx].monto = v;
+                // Sumar solo si el checkbox está marcado
+                const chk = document.getElementById('chkFijo_' + el.dataset.idx);
+                if (chk && chk.checked) totalFijos += v;
             });
             
+            localStorage.setItem('nexa_sueldo_bryan', ingB);
+            localStorage.setItem('nexa_sueldo_katia', ingK);
             localStorage.setItem('nexa_lote1_ingreso', ing);
             localStorage.setItem('nexa_gastos_fijos', JSON.stringify(fijos));
             
             let disp = ing - totalFijos;
             let sumTarjetas = 0;
+            let newUpdates = [];
             
-            ['Falabella', 'Cencosud', 'Itaú'].forEach(nombre => {
-                let d = state.deudas.find(x => x.nombre === nombre);
-                if (d && d.saldo > 0) sumTarjetas += Math.min(d.saldo, d.minimo);
+            document.querySelectorAll('.tarjeta-lote1-checkbox').forEach(chk => {
+                if (chk.checked) {
+                    const id = chk.dataset.id;
+                    const pago = parseFloat(chk.dataset.pago);
+                    sumTarjetas += pago;
+                    
+                    let realD = state.deudas.find(x => x.id === id);
+                    if(realD) newUpdates.push({ ...realD, saldo: realD.saldo - pago, pagoRealizado: pago });
+                }
             });
             
             disp -= sumTarjetas;
+            pendingLoteUpdates.updates = newUpdates;
             pendingLoteUpdates.disp = disp;
             
             const sobranteEl = document.getElementById('lote1Sobrante');
             sobranteEl.textContent = fmt(disp);
             sobranteEl.className = disp < 0 ? 'fs-5 fw-bold text-danger-custom' : 'fs-5 fw-bold text-success-custom';
             
-            // Actualizar vista principal en vivo si está detrás
             renderNieve(true);
-            renderAjustes(); // Por si la vista ajustes también está abierta o en caché
+            renderAjustes();
         };
 
         window.prepararLote1 = () => {
             if (state.ciclo.fase !== 0) return;
             pendingLoteType = 1;
             
-            const ingreso = parseFloat(localStorage.getItem('nexa_lote1_ingreso')) || 920000;
+            let ingB = parseFloat(localStorage.getItem('nexa_sueldo_bryan')) || 0;
+            let ingK = parseFloat(localStorage.getItem('nexa_sueldo_katia')) || 0;
+            if (ingB === 0 && ingK === 0) {
+                ingB = parseFloat(localStorage.getItem('nexa_lote1_ingreso')) || 920000;
+            }
+            
             let fijos = JSON.parse(localStorage.getItem('nexa_gastos_fijos')) || GASTOS_FIJOS;
-            let totalFijos = fijos.reduce((sum, g) => sum + g.monto, 0);
-            let disp = ingreso - totalFijos;
             
             let checklistHTML = `
                 <div class="mb-3 pb-3 border-bottom">
-                    <h6 class="fw-bold text-success-custom mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">account_balance_wallet</span> Ingreso Lote 1</h6>
+                    <h6 class="fw-bold text-success-custom mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">account_balance_wallet</span> Ingresos Lote 1</h6>
                     <div class="d-flex justify-content-between align-items-center mt-2">
-                        <span>Fondo Día 5</span>
+                        <span>Sueldo Bryan</span>
                         <div class="input-group input-group-sm" style="width: 140px;">
                             <span class="input-group-text bg-transparent text-muted border-end-0">$</span>
-                            <input type="number" id="lote1Ingreso" class="form-control border-start-0 text-end fw-bold px-1" value="${ingreso}" oninput="recalcularLote1()">
+                            <input type="number" id="lote1IngresoB" class="form-control border-start-0 text-end fw-bold px-1" value="${ingB}" oninput="recalcularLote1()">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span>Sueldo Katia</span>
+                        <div class="input-group input-group-sm" style="width: 140px;">
+                            <span class="input-group-text bg-transparent text-muted border-end-0">$</span>
+                            <input type="number" id="lote1IngresoK" class="form-control border-start-0 text-end fw-bold px-1" value="${ingK}" oninput="recalcularLote1()">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3 pb-3 border-bottom">
-                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos (Editables)</h6>`;
+                    <h6 class="fw-bold mb-1"><span class="material-symbols-rounded fs-5 align-middle me-1">home</span> Gastos Fijos (Editables)</h6>
+                    <p class="small text-muted mb-2">Marca lo que ya has pagado o vayas a pagar hoy.</p>`;
             
             fijos.forEach((g, idx) => {
                 checklistHTML += `
                     <div class="d-flex justify-content-between align-items-center mt-2 text-danger-custom">
-                        <label class="d-flex align-items-center"><input type="checkbox" checked disabled class="me-2" style="opacity: 0.6;">${g.nombre}</label>
-                        <div class="input-group input-group-sm" style="width: 140px;">
+                        <label class="d-flex align-items-center" style="cursor: pointer;">
+                            <input type="checkbox" id="chkFijo_${idx}" checked class="me-2" style="transform: scale(1.2);" onchange="recalcularLote1()">
+                            ${g.nombre}
+                        </label>
+                        <div class="input-group input-group-sm" style="width: 130px;">
                             <span class="input-group-text bg-transparent text-danger-custom border-end-0" style="border-color: rgba(220, 38, 38, 0.3);">$</span>
                             <input type="number" data-idx="${idx}" class="form-control border-start-0 text-end fw-bold text-danger-custom px-1 gasto-base-input" style="border-color: rgba(220, 38, 38, 0.3);" value="${g.monto}" oninput="recalcularLote1()">
                         </div>
@@ -837,21 +864,25 @@
                 let d = state.deudas.find(x => x.nombre === nombre);
                 if (d && d.saldo > 0) {
                     let pago = Math.min(d.saldo, d.minimo);
-                    disp -= pago;
                     updates.push({ ...d, saldo: d.saldo - pago, pagoRealizado: pago });
                     checklistHTML += `
-                    <div class="d-flex justify-content-between text-danger-custom mt-1 align-items-center" style="opacity: 0.85;">
-                        <label class="d-flex align-items-center"><input type="checkbox" checked disabled class="me-2">${d.nombre} (Mínimo)</label>
+                    <div class="d-flex justify-content-between text-danger-custom mt-2 align-items-center">
+                        <label class="d-flex align-items-center" style="cursor: pointer;">
+                            <input type="checkbox" checked class="me-2 tarjeta-lote1-checkbox" data-id="${d.id}" data-pago="${pago}" style="transform: scale(1.2);" onchange="recalcularLote1()">
+                            ${d.nombre} (Mínimo)
+                        </label>
                         <strong>-${fmt(pago)}</strong>
                     </div>`;
                 }
             });
             
+            pendingLoteUpdates = { updates, disp: 0 };
+            
             checklistHTML += `
                 </div>
                 <div class="mt-4 p-3 bg-custom-gray rounded-3 d-flex justify-content-between align-items-center">
                     <span class="fw-bold text-main">Sobrante al Pozo:</span>
-                    <span id="lote1Sobrante" class="fs-5 fw-bold ${disp < 0 ? 'text-danger-custom' : 'text-success-custom'}">${fmt(disp)}</span>
+                    <span id="lote1Sobrante" class="fs-5 fw-bold text-success-custom">$0</span>
                 </div>
             `;
             
