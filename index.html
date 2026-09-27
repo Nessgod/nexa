@@ -180,10 +180,10 @@
     </div>
 
     <!-- PANTALLA DE SELECCIÓN DE PERFIL -->
-    <div id="auth-section" class="container app-container pt-5 d-none">
-        <div class="text-center mb-5 mt-4">
-            <img src="familia.jpg" class="rounded-circle shadow" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--bg-card);" alt="Familia">
-            <h1 class="fw-bold text-main mt-3">Hogar Nexa</h1>
+    <div id="auth-section" class="container app-container pt-3 d-none">
+        <div class="text-center mb-5">
+            <img src="familia.jpg" class="shadow-sm mb-3" style="width: 100%; height: 220px; object-fit: cover; border-radius: 24px;" alt="Familia">
+            <h1 class="fw-bold text-main mt-2">Hogar Nexa</h1>
             <p class="text-muted">¿Quién está ingresando hoy?</p>
         </div>
         
@@ -192,8 +192,8 @@
                 <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; z-index: 10;" onclick="document.getElementById('uploadBryan').click(); event.stopPropagation();">
                     <span class="material-symbols-rounded" style="font-size: 16px;">edit</span>
                 </button>
-                <div class="card text-center p-4 profile-card bryan" onclick="loginAs('Bryan')">
-                    <img id="imgAvatarBryan" src="bryan.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Bryan">
+                <div class="card text-center p-3 profile-card bryan" onclick="loginAs('Bryan')">
+                    <img id="imgAvatarBryan" src="bryan.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" alt="Bryan">
                     <h5 class="fw-bold mb-0 text-main">Bryan</h5>
                 </div>
                 <input type="file" id="uploadBryan" accept="image/*" class="d-none" onchange="handleAvatarUpload(event, 'Bryan')">
@@ -202,8 +202,8 @@
                 <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; z-index: 10;" onclick="document.getElementById('uploadKatia').click(); event.stopPropagation();">
                     <span class="material-symbols-rounded" style="font-size: 16px;">edit</span>
                 </button>
-                <div class="card text-center p-4 profile-card katia" onclick="loginAs('Katia')">
-                    <img id="imgAvatarKatia" src="katia.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Katia">
+                <div class="card text-center p-3 profile-card katia" onclick="loginAs('Katia')">
+                    <img id="imgAvatarKatia" src="katia.jpg" class="rounded-circle mx-auto mb-3 shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" alt="Katia">
                     <h5 class="fw-bold mb-0 text-main">Katia</h5>
                 </div>
                 <input type="file" id="uploadKatia" accept="image/*" class="d-none" onchange="handleAvatarUpload(event, 'Katia')">
