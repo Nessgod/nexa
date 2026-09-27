@@ -1,8 +1,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.33.1/+esm'
 
 // Configuración de Supabase
-const supabaseUrl = 'TU_URL_DE_SUPABASE';
-const supabaseKey = 'TU_LLAVE_ANONIMA_DE_SUPABASE';
+const supabaseUrl = 'https://wwtgrwbvjpgafffborys.supabase.co';
+const supabaseKey = 'sb_publishable_3TXgd6XMMJYUTf53hAz_DA_O6pYlxm5';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Estado Global
