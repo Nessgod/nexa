@@ -157,12 +157,17 @@
             font-weight: 700; font-size: 1.1rem;
         }
 
-        /* Util clases overridden */
         .text-accent { color: var(--accent-blue) !important; }
         .text-success-custom { color: var(--accent-green) !important; }
         .text-danger-custom { color: var(--accent-red) !important; }
         .text-warning-custom { color: #D97706 !important; }
         .bg-custom-gray { background-color: #F9FAFB !important; }
+
+        .profile-card { cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+        .profile-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .profile-card:active { transform: translateY(0); }
+        .profile-card.bryan { border-color: rgba(59, 130, 246, 0.3); }
+        .profile-card.katia { border-color: rgba(236, 72, 153, 0.3); }
     </style>
 </head>
 <body>
@@ -174,23 +179,30 @@
         <p class="text-muted small">Sincronizando finanzas...</p>
     </div>
 
-    <!-- PANTALLA DE AUTENTICACIÓN -->
+    <!-- PANTALLA DE SELECCIÓN DE PERFIL -->
     <div id="auth-section" class="container app-container pt-5 d-none">
         <div class="text-center mb-5 mt-4">
-            <span class="material-symbols-rounded text-accent" style="font-size: 64px;">account_balance</span>
-            <h1 class="fw-bold text-main mt-3">Nexa OS</h1>
-            <p class="text-muted">Tu sistema operativo financiero.</p>
+            <span class="material-symbols-rounded text-accent" style="font-size: 64px;">family_home</span>
+            <h1 class="fw-bold text-main mt-3">Hogar Nexa</h1>
+            <p class="text-muted">¿Quién está ingresando hoy?</p>
         </div>
-        <div class="card p-4 mx-2">
-            <form id="authForm">
-                <input type="email" id="authEmail" class="form-control mb-3" placeholder="Correo electrónico" required>
-                <input type="password" id="authPass" class="form-control mb-4" placeholder="Contraseña" required>
-                <button type="submit" class="btn btn-primary-custom w-100 btn-custom mb-3">
-                    <span class="material-symbols-rounded">login</span> Iniciar Sesión / Crear Cuenta
-                </button>
-                <div id="authError" class="text-center text-danger-custom small"></div>
-            </form>
+        
+        <div class="row g-4 mx-2">
+            <div class="col-6">
+                <div class="card text-center p-4 profile-card bryan" onclick="loginAs('Bryan')">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bryan&backgroundColor=b6e3f4" class="rounded-circle mx-auto mb-3 shadow-sm" width="80" alt="Bryan">
+                    <h5 class="fw-bold mb-0 text-main">Bryan</h5>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card text-center p-4 profile-card katia" onclick="loginAs('Katia')">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Katia&backgroundColor=ffdfbf" class="rounded-circle mx-auto mb-3 shadow-sm" width="80" alt="Katia">
+                    <h5 class="fw-bold mb-0 text-main">Katia</h5>
+                </div>
+            </div>
         </div>
+        
+        <div class="text-center mt-5" id="authError"></div>
     </div>
 
     <!-- MODAL CHECKLIST LOTE -->
@@ -368,10 +380,11 @@
         const fmt = (n) => '$' + Math.round(n).toLocaleString('es-CL');
 
         async function boot() {
+            const profile = localStorage.getItem('nexa_profile');
             const { data: { session } } = await supabase.auth.getSession();
             document.getElementById('loader').classList.add('d-none');
             
-            if (session) {
+            if (session && profile) {
                 currentUser = session.user;
                 showApp();
             } else {
@@ -379,37 +392,36 @@
             }
 
             supabase.auth.onAuthStateChange((_e, session) => {
-                if (session) { currentUser = session.user; showApp(); } 
-                else { currentUser = null; showAuth(); }
+                if (session && localStorage.getItem('nexa_profile')) { 
+                    currentUser = session.user; 
+                    showApp(); 
+                } 
             });
         }
 
-        document.getElementById('authForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPass').value;
+        window.loginAs = async (name) => {
+            localStorage.setItem('nexa_profile', name);
             const err = document.getElementById('authError');
+            err.innerHTML = '<span class="spinner-border spinner-border-sm text-accent"></span> <span class="ms-2 text-muted">Cargando...</span>';
             
-            const btn = e.target.querySelector('button');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Cargando...';
-            btn.disabled = true;
+            const email = 'familia@nexa.app';
+            const password = 'HogarNexa2026!';
             
             let { error } = await supabase.auth.signInWithPassword({ email, password });
             
             if (error && error.message.includes("Invalid login")) {
                 const { error: regErr } = await supabase.auth.signUp({ email, password });
-                if (regErr) err.textContent = regErr.message;
-                else err.innerHTML = "<span class='text-success-custom'>Cuenta creada. Cargando...</span>";
+                if (regErr) err.innerHTML = `<span class="text-danger-custom">${regErr.message}</span>`;
             } else if (error) {
-                err.textContent = error.message;
+                err.innerHTML = `<span class="text-danger-custom">${error.message}</span>`;
             }
-            
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        });
+        };
 
-        window.logout = async () => { await supabase.auth.signOut(); }
+        window.logout = async () => { 
+            localStorage.removeItem('nexa_profile');
+            await supabase.auth.signOut(); 
+            showAuth();
+        }
 
         function showAuth() {
             document.getElementById('auth-section').classList.remove('d-none');
@@ -422,8 +434,8 @@
             document.getElementById('app-section').classList.remove('d-none');
             document.getElementById('bottom-nav').classList.remove('d-none');
             
-            const name = currentUser.email.split('@')[0];
-            document.getElementById('userName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            const profile = localStorage.getItem('nexa_profile') || 'Usuario';
+            document.getElementById('userName').textContent = profile;
             
             await loadData();
         }
@@ -755,7 +767,9 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
             btn.disabled = true;
             
-            const desc = document.getElementById('descGasto').value;
+            const rawDesc = document.getElementById('descGasto').value;
+            const profile = localStorage.getItem('nexa_profile') || 'Hogar';
+            const desc = `[${profile}] ${rawDesc}`;
             const monto = parseFloat(document.getElementById('montoGasto').value);
             
             const { data, error } = await supabase.from('Finanzas_Movimientos').insert([{ user_id: currentUser.id, descripcion: desc, monto: monto }]).select().single();
@@ -781,6 +795,17 @@
             state.movimientos.forEach(g => {
                 total += Number(g.monto);
                 const fechaStr = new Date(g.creado_en).toLocaleDateString();
+                
+                let descText = g.descripcion;
+                let badgeHtml = '';
+                const match = descText.match(/^\[(.*?)\] (.*)$/);
+                if (match) {
+                    const profileName = match[1];
+                    descText = match[2];
+                    const bgClass = profileName === 'Katia' ? 'bg-danger' : (profileName === 'Bryan' ? 'bg-primary' : 'bg-secondary');
+                    badgeHtml = `<span class="badge ${bgClass} me-2" style="font-size: 0.65rem; opacity: 0.85;">${profileName}</span>`;
+                }
+
                 html += `
                 <div class="debt-item bg-transparent">
                     <div class="d-flex align-items-center">
@@ -788,7 +813,10 @@
                             <span class="material-symbols-rounded">receipt</span>
                         </div>
                         <div>
-                            <div style="font-weight: 600; color: var(--text-main); font-size: 1.05rem;">${g.descripcion}</div>
+                            <div class="d-flex align-items-center mb-1">
+                                ${badgeHtml}
+                                <div style="font-weight: 600; color: var(--text-main); font-size: 1.05rem;">${descText}</div>
+                            </div>
                             <div style="font-size: 0.8rem; color: var(--text-muted);">${fechaStr}</div>
                         </div>
                     </div>
