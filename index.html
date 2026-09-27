@@ -738,7 +738,15 @@
                 await supabase.from('Finanzas_Deudas').insert(insertDeudas);
                 let { data: nuevas } = await supabase.from('Finanzas_Deudas').select('*').eq('user_id', currentUser.id).order('saldo', { ascending: true });
                 state.deudas = nuevas || [];
-            } else { state.deudas = deudas; }
+            } else { 
+                // MIGRACIÓN LOTE 1 (Corrige DEFAULT 2 de SQL)
+                let fixLote1 = deudas.filter(d => ['Falabella', 'Cencosud', 'Itaú'].includes(d.nombre) && d.lote === 2);
+                if(fixLote1.length > 0) {
+                    await Promise.all(fixLote1.map(d => supabase.from('Finanzas_Deudas').update({ lote: 1 }).eq('id', d.id)));
+                    deudas.forEach(d => { if(fixLote1.find(f => f.id === d.id)) d.lote = 1; });
+                }
+                state.deudas = deudas; 
+            }
 
             let { data: movs } = await supabase.from('Finanzas_Movimientos').select('*').eq('user_id', currentUser.id).order('creado_en', { ascending: false });
             state.movimientos = movs || [];
