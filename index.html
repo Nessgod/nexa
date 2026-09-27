@@ -6,28 +6,27 @@
     <title>Nexa OS</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="/icon.png">
     <link rel="manifest" href="/manifest.json">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Material Symbols Rounded for a modern, friendly native app look -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
     
     <style>
         :root {
-            --bg-base: #0B0E14;
-            --bg-card: #151A24;
-            --text-main: #F3F4F6;
-            --text-muted: #9CA3AF;
-            --accent-blue: #3B82F6;
-            --accent-blue-dim: rgba(59, 130, 246, 0.15);
-            --accent-green: #10B981;
-            --accent-green-dim: rgba(16, 185, 129, 0.15);
-            --accent-red: #EF4444;
-            --accent-red-dim: rgba(239, 68, 68, 0.15);
-            --border-color: #1F2937;
+            --bg-base: #F3F4F6;
+            --bg-card: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --accent-blue: #2563EB;
+            --accent-blue-dim: rgba(37, 99, 235, 0.1);
+            --accent-green: #059669;
+            --accent-green-dim: rgba(5, 150, 105, 0.1);
+            --accent-red: #DC2626;
+            --accent-red-dim: rgba(220, 38, 38, 0.1);
+            --border-color: #E5E7EB;
             --app-max-width: 500px;
         }
         
@@ -37,7 +36,7 @@
             font-family: 'Inter', system-ui, -apple-system, sans-serif; 
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 80px;
             padding-top: env(safe-area-inset-top);
         }
 
@@ -48,23 +47,20 @@
 
         .app-container { max-width: var(--app-max-width); margin: 0 auto; }
         
-        /* Typography */
         h1, h2, h3, h4, h5 { font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0; }
         
-        /* Modern Cards */
         .card { 
             background-color: var(--bg-card); 
             border: 1px solid var(--border-color); 
             border-radius: 20px; 
             margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             overflow: hidden;
         }
         
-        /* Header / Balance Area */
         .balance-header {
             padding: 30px 20px;
-            background: linear-gradient(145deg, #1C2331 0%, #151A24 100%);
+            background: linear-gradient(145deg, #F8FAFC 0%, #FFFFFF 100%);
             border-bottom: 1px solid var(--border-color);
             text-align: center;
         }
@@ -72,13 +68,12 @@
             font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -1px;
-            background: -webkit-linear-gradient(45deg, #10B981, #34D399);
+            background: -webkit-linear-gradient(45deg, #059669, #10B981);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 10px 0;
         }
 
-        /* Lists */
         .debt-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 18px 20px; border-bottom: 1px solid var(--border-color);
@@ -86,18 +81,17 @@
             transition: background-color 0.2s;
         }
         .debt-item:last-child { border-bottom: none; }
-        .debt-item:active { background-color: rgba(255,255,255,0.02); }
+        .debt-item:active { background-color: rgba(0,0,0,0.02); }
         
         .debt-icon {
             width: 44px; height: 44px;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            background-color: #1F2937;
+            background-color: #F3F4F6;
             margin-right: 15px;
-            color: var(--text-main);
+            color: var(--text-muted);
         }
         
-        /* Buttons */
         .btn-custom { 
             font-weight: 600; padding: 16px; border-radius: 16px; border: none; 
             display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -106,18 +100,17 @@
         }
         .btn-custom:active { transform: scale(0.96); }
         .btn-custom:disabled { opacity: 0.4; transform: none; }
-        .btn-primary-custom { background-color: var(--accent-blue); color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
-        .btn-success-custom { background-color: var(--accent-green); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        .btn-primary-custom { background-color: var(--accent-blue); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+        .btn-success-custom { background-color: var(--accent-green); color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.2); }
         .btn-danger-icon { 
             background: var(--accent-red-dim); color: var(--accent-red); 
             border: none; border-radius: 10px; padding: 8px;
             display: flex; align-items: center; justify-content: center;
         }
         
-        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
-            background-color: rgba(21, 26, 36, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-top: 1px solid var(--border-color);
@@ -136,27 +129,23 @@
         
         .d-none { display: none !important; }
         
-        /* Forms */
         .form-control { 
-            background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); 
-            color: white; padding: 16px; border-radius: 14px; font-size: 1rem;
+            background-color: #F9FAFB; border: 1px solid var(--border-color); 
+            color: var(--text-main); padding: 16px; border-radius: 14px; font-size: 1rem;
         }
         .form-control:focus { 
-            background-color: rgba(255,255,255,0.05); color: white; 
+            background-color: #FFFFFF; color: var(--text-main); 
             border-color: var(--accent-blue); box-shadow: 0 0 0 4px var(--accent-blue-dim); 
         }
         
-        /* Tables */
-        .table-dark { background-color: transparent; color: var(--text-main); margin-bottom: 0; }
-        .table-dark th { border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 10px; }
-        .table-dark td { border-bottom: 1px solid var(--border-color); padding: 16px 10px; font-size: 0.95rem; vertical-align: middle; }
-        .table-dark tr:last-child td { border-bottom: none; }
+        .table-custom { background-color: transparent; color: var(--text-main); margin-bottom: 0; width: 100%; }
+        .table-custom th { border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 10px; text-align: left;}
+        .table-custom td { border-bottom: 1px solid var(--border-color); padding: 16px 10px; font-size: 0.95rem; vertical-align: middle; }
+        .table-custom tr:last-child td { border-bottom: none; }
 
-        /* Loader */
-        #loader { position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg-base); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        #loader { position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg-card); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .spinner-border { width: 3rem; height: 3rem; color: var(--accent-blue); border-width: 4px; }
         
-        /* Top Bar */
         .top-bar {
             display: flex; justify-content: space-between; align-items: center;
             padding: 16px 20px;
@@ -167,6 +156,13 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 1.1rem;
         }
+
+        /* Util clases overridden */
+        .text-accent { color: var(--accent-blue) !important; }
+        .text-success-custom { color: var(--accent-green) !important; }
+        .text-danger-custom { color: var(--accent-red) !important; }
+        .text-warning-custom { color: #D97706 !important; }
+        .bg-custom-gray { background-color: #F9FAFB !important; }
     </style>
 </head>
 <body>
@@ -219,12 +215,12 @@
                 <div class="balance-header">
                     <p class="text-muted small text-uppercase fw-bold mb-1">Caja Disponible (Pozo)</p>
                     <div id="pozoActual" class="balance-amount">$0</div>
-                    <div class="d-inline-flex align-items-center bg-dark rounded-pill px-3 py-1 mt-2 border" style="border-color: #374151 !important;">
-                        <span class="material-symbols-rounded fs-6 me-2 text-warning">calendar_month</span>
-                        <span class="small fw-semibold">Mes de Simulación: <span id="mesBadge" class="text-white">1</span></span>
+                    <div class="d-inline-flex align-items-center bg-custom-gray rounded-pill px-3 py-1 mt-2 border" style="border-color: var(--border-color) !important;">
+                        <span class="material-symbols-rounded fs-6 me-2 text-warning-custom">calendar_month</span>
+                        <span class="small fw-semibold text-main">Mes de Simulación: <span id="mesBadge">1</span></span>
                     </div>
                 </div>
-                <div class="card-body text-center py-4 bg-dark bg-opacity-25">
+                <div class="card-body text-center py-4 bg-custom-gray">
                     <p class="mb-1 small text-muted text-uppercase fw-bold">Estado Actual</p>
                     <h5 id="estadoCiclo" class="text-accent mb-0">Esperando Lote 1</h5>
                 </div>
@@ -332,7 +328,6 @@
             { nombre: 'Cencosud', saldo: 1195320, minimo: 85000, icon: 'storefront' }
         ];
         
-        // Helper to match icons
         const getIconForDebt = (nombre) => {
             const base = DEUDAS_BASE.find(d => d.nombre === nombre);
             return base ? base.icon : 'credit_card';
@@ -393,7 +388,6 @@
             document.getElementById('app-section').classList.remove('d-none');
             document.getElementById('bottom-nav').classList.remove('d-none');
             
-            // Set User Name (part before @)
             const name = currentUser.email.split('@')[0];
             document.getElementById('userName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
             
@@ -401,14 +395,12 @@
         }
 
         async function loadData() {
-            // Ciclo
             let { data: ciclo } = await supabase.from('Finanzas_Ciclo').select('*').eq('user_id', currentUser.id).single();
             if (!ciclo) {
                 const { data: newCiclo } = await supabase.from('Finanzas_Ciclo').insert([{ user_id: currentUser.id }]).select().single();
                 state.ciclo = newCiclo || { mes: 1, fase: 0, pozo: 0 };
             } else { state.ciclo = ciclo; }
 
-            // Deudas
             let { data: deudas } = await supabase.from('Finanzas_Deudas').select('*').eq('user_id', currentUser.id).order('saldo', { ascending: true });
             if (!deudas || deudas.length === 0) {
                 const insertDeudas = DEUDAS_BASE.map(({nombre, saldo, minimo}) => ({ nombre, saldo, minimo, user_id: currentUser.id }));
@@ -417,7 +409,6 @@
                 state.deudas = nuevas || [];
             } else { state.deudas = deudas; }
 
-            // Movimientos
             let { data: movs } = await supabase.from('Finanzas_Movimientos').select('*').eq('user_id', currentUser.id).order('creado_en', { ascending: false });
             state.movimientos = movs || [];
 
@@ -520,8 +511,8 @@
             } else {
                 b1.disabled = true; b1.innerHTML = '<span class="material-symbols-rounded">check</span> Lote 1 (Listo)';
                 b2.disabled = false; b2.innerHTML = '<span class="material-symbols-rounded">bolt</span> Lote 2';
-                ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1 text-warning'>target</span> Esperando Lote 2"; 
-                ec.className = "text-warning mb-0 fw-bold";
+                ec.innerHTML = "<span class='material-symbols-rounded align-middle me-1 text-warning-custom'>target</span> Esperando Lote 2"; 
+                ec.className = "text-warning-custom mb-0 fw-bold";
             }
 
             let html = '', pagadas = true;
@@ -530,7 +521,7 @@
                 const isPaid = d.saldo === 0;
                 const iconName = getIconForDebt(d.nombre);
                 html += `
-                <div class="debt-item" style="${isPaid ? 'opacity: 0.3;' : ''}">
+                <div class="debt-item" style="${isPaid ? 'opacity: 0.4;' : ''}">
                     <div class="d-flex align-items-center">
                         <div class="debt-icon ${isPaid ? 'bg-success bg-opacity-10 text-success' : ''}">
                             <span class="material-symbols-rounded">${isPaid ? 'check_circle' : iconName}</span>
@@ -552,7 +543,7 @@
         function renderPlanProyectado() {
             let s = JSON.parse(JSON.stringify(state.deudas));
             let m = state.ciclo.mes, maxM = m + 40;
-            let html = `<table class="table table-dark table-borderless mb-0">
+            let html = `<table class="table-custom">
                 <thead><tr>
                     <th>Mes</th><th>Tarjeta</th><th>Pago</th><th>Restante</th>
                 </tr></thead><tbody>`;
